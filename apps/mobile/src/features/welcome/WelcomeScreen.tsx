@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from './WelcomeScreen.styles';
+import { router } from 'expo-router';
 
 export default function WelcomeScreen() {
     return (
@@ -39,6 +40,7 @@ export default function WelcomeScreen() {
                 {/* Actions */}
                 <View style={styles.actions}>
                     <Pressable
+                        onPress={() => router.push("/onboarding/nova")}
                         style={({ pressed }) => [
                             styles.primaryButton,
                             pressed && styles.primaryButtonPressed,
