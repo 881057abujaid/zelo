@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import { styles } from "./NovaIntroScreen.styles";
+import OnboardingProgress from "@/components/onboarding/onboardingProgress";
 
 export default function NovaIntroScreen() {
     return (
@@ -10,12 +11,10 @@ export default function NovaIntroScreen() {
             <View style={styles.content}>
                 <View style={styles.container}>
                     {/* Progress */}
-                    <View style={styles.progress}>
-                        <View style={styles.activeDot} />
-                        <View style={styles.dot} />
-                        <View style={styles.dot} />
-                        <View style={styles.dot} />
-                    </View>
+                    <OnboardingProgress
+                        currentStep={1}
+                        totalSteps={4}
+                    />
 
                     {/* Nova */}
                     <View style={styles.characterContainer}>
