@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 
 import { styles } from './GoalSelectionScreen.styles';
-import OnboardingProgress from '@/components/onboarding/onboardingProgress';
+import OnboardingProgress from '@/components/onboarding/OnboardingProgress';
 
 type Goal = {
     id: string;

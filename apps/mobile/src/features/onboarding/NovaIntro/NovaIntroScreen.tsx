@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import { styles } from "./NovaIntroScreen.styles";
-import OnboardingProgress from "@/components/onboarding/onboardingProgress";
+import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
 
 export default function NovaIntroScreen() {
     return (
