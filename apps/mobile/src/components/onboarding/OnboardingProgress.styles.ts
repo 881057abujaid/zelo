@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
         paddingTop: 4,
+        paddingBottom: 6,
     },
 
     dot: {
