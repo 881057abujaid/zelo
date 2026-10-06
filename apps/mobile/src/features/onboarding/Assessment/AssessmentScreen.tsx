@@ -38,10 +38,12 @@ export default function AssessmentScreen() {
         const newScore = isCorrect ? score + 1 : score;
 
         if (isLastQuestion) {
-            setScore(newScore);
-
-            // Analysis screen will be connected next.
-            console.log('Assessment completed:', newScore);
+            router.push({
+                pathname: "/onboarding/analysis",
+                params: {
+                    score: newScore.toString(),
+                }
+            });
 
             return;
         }
