@@ -1,9 +1,47 @@
 import { ScrollView, Pressable, Text, View, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
 
 import { styles } from "./ChallengeScreen.styles";
+import { challengeData } from "./challengeData";
+import { executeCode, submitChallenge } from "./engine/challengeRunner";
+import { MockExecutor } from "./engine/executor/mockExecutor";
+
+const challenge = challengeData;
+const executor = new MockExecutor();
 
 export default function ChallengeScreen() {
+    const [code, setCode] = useState(challenge.starterCode);
+    const [output, setOutput] = useState<string | null>(null);
+    const [validation, setValidation] = useState<{
+        isCorrect: boolean;
+        message: string;
+    } | null>(null);
+
+    const handleRunCode = async () => {
+        setOutput(null);
+
+        const result = await executeCode(code, executor);
+
+        if (result.status === "success") {
+            setOutput(result.output);
+            return;
+        }
+
+        setOutput(result.error ?? "Code execution failed");
+    };
+
+    const handleCheckAnswer = async () => {
+        const result = await submitChallenge(challenge, code, executor);
+
+        setValidation({
+            isCorrect: result.isCorrect,
+            message: result.isCorrect
+                ? "Great job! Challenge completed."
+                : result.error ?? "Your answer is not correct.",
+        });
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
@@ -14,13 +52,13 @@ export default function ChallengeScreen() {
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={styles.challengeLabel}>
-                        🎯 CHALLENGE 01
+                        🎯 CHALLENGE {String(challenge.number).padStart(2, "0")}
                     </Text>
                     <Text style={styles.title}>
-                        Variables
+                        {challenge.title}
                     </Text>
                     <Text style={styles.subtitle}>
-                        JavaScript Foundations
+                        {challenge.category}
                     </Text>
                 </View>
 
@@ -28,10 +66,10 @@ export default function ChallengeScreen() {
                 <View style={styles.progressSection}>
                     <View style={styles.progressHeader}>
                         <Text style={styles.progressLabel}>
-                            challenge 1 of 5
+                            challenge {challenge.number} of {challenge.total}
                         </Text>
                         <Text style={styles.xpText}>
-                            +50 XP
+                            +{challenge.xp} XP
                         </Text>
                     </View>
 
@@ -52,11 +90,7 @@ export default function ChallengeScreen() {
                         Your Task
                     </Text>
                     <Text style={styles.taskDescription}>
-                        Create a variable called
-                        <Text style={styles.inlineCode}>
-                            {" name "}
-                        </Text>
-                        and store your name in it.
+                        {challenge.description}
                     </Text>
                 </View>
 
@@ -66,7 +100,7 @@ export default function ChallengeScreen() {
                         EXAMPLE
                     </Text>
                     <Text style={styles.codeText}>
-                        {`const name = "Alex";`}
+                        {challenge.example}
                     </Text>
                 </View>
 
@@ -85,10 +119,12 @@ export default function ChallengeScreen() {
                         <TextInput
                             style={styles.codeInput}
                             multiline
+                            value={code}
+                            onChangeText={setCode}
                             autoCapitalize="none"
                             autoCorrect={false}
                             spellCheck={false}
-                            placeholder={`cont name = "Your name";`}
+                            placeholder="Write your code here..."
                             placeholderTextColor="#64748B"
                             textAlignVertical="top"
                         />
@@ -96,7 +132,10 @@ export default function ChallengeScreen() {
                 </View>
 
                 {/* Run */}
-                <Pressable style={styles.runButton}>
+                <Pressable
+                    onPress={handleRunCode}
+                    style={styles.runButton}
+                >
                     <Text style={styles.runIcon}>
                         ▶
                     </Text>
@@ -104,6 +143,25 @@ export default function ChallengeScreen() {
                         Run
                     </Text>
                 </Pressable>
+
+                {output !== null && (
+                    <View style={styles.outputSection}>
+                        <View style={styles.outputHeader}>
+                            <Text style={styles.outputTitle}>
+                                Output
+                            </Text>
+                            <Text style={styles.outputStatus}>
+                                ● Ready
+                            </Text>
+                        </View>
+
+                        <View style={styles.outputConsole}>
+                            <Text style={styles.outputText}>
+                                {output}
+                            </Text>
+                        </View>
+                    </View>
+                )}
 
                 {/* Lives */}
                 <View style={styles.bottomInfo}>
@@ -124,7 +182,10 @@ export default function ChallengeScreen() {
                 </View>
 
                 {/* Check Answer */}
-                <Pressable style={styles.checkButton}>
+                <Pressable
+                    style={styles.checkButton}
+                    onPress={handleCheckAnswer}
+                >
                     <Text style={styles.checkButtonText}>
                         Check Answer
                     </Text>
@@ -132,6 +193,28 @@ export default function ChallengeScreen() {
                         →
                     </Text>
                 </Pressable>
+
+                {validation && (
+                    <View style={[
+                        styles.validationCard,
+                        validation.isCorrect
+                            ? styles.successCard
+                            : styles.errorCard,
+                    ]}>
+                        <Text style={styles.validationIcon}>
+                            {validation.isCorrect ? "🎉" : "💡"}
+                        </Text>
+
+                        <View style={styles.validationContent}>
+                            <Text style={styles.validationTitle}>
+                                {validation.isCorrect ? "Correct!" : "Not quite"}
+                            </Text>
+                            <Text style={styles.validationMessage}>
+                                {validation.message}
+                            </Text>
+                        </View>
+                    </View>
+                )}
             </ScrollView>
         </SafeAreaView>
     );

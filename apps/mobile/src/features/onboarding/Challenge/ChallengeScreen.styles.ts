@@ -265,4 +265,84 @@ export const styles = StyleSheet.create({
         fontSize: 22,
         color: colors.surface,
     },
+
+    outputSection: {
+        marginTop: 18,
+    },
+
+    outputHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 9,
+    },
+
+    outputTitle: {
+        fontSize: 18,
+        fontWeight: "800",
+        color: colors.text,
+    },
+
+    outputStatus: {
+        fontSize: 11,
+        fontWeight: "700",
+        color: colors.primary,
+    },
+
+    outputConsole: {
+        minHeight: 100,
+        padding: 16,
+        borderRadius: 16,
+        backgroundColor: "#0F172A",
+        borderWidth: 1,
+        borderColor: "#1E293B",
+    },
+
+    outputText: {
+        fontSize: 14,
+        lineHeight: 21,
+        fontFamily: "monospace",
+        color: "#F8FAFC",
+    },
+
+    validationCard: {
+        marginTop: 18,
+        padding: 15,
+        borderRadius: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+    },
+
+    successCard: {
+        backgroundColor: "#DCFCE7",
+        borderColor: "#86EFAC",
+    },
+
+    errorCard: {
+        backgroundColor: "#FEF3C7",
+        borderColor: "#FCD34D",
+    },
+
+    validationIcon: {
+        fontSize: 25,
+    },
+
+    validationContent: {
+        flex: 1,
+        marginLeft: 11,
+    },
+
+    validationTitle: {
+        fontSize: 16,
+        fontWeight: "800",
+        color: colors.text,
+    },
+
+    validationMessage: {
+        marginTop: 3,
+        fontSize: 13,
+        lineHeight: 19,
+        color: colors.textSecondary,
+    },
 });
