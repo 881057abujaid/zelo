@@ -208,40 +208,63 @@ export const styles = StyleSheet.create({
         color: colors.text,
     },
 
-    bottomInfo: {
-        marginTop: 20,
+    statsCard: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
+
+        marginTop: 20,
+        marginBottom: 16,
+
+        paddingVertical: 16,
+        paddingHorizontal: 18,
+
+        backgroundColor: colors.surface,
+
+        borderWidth: 1,
+        borderColor: colors.border,
+
+        borderRadius: 18,
     },
 
-    lives: {
+    statItem: {
+        flex: 1,
+
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "center",
+
+        gap: 10,
     },
 
-    livesText: {
-        fontSize: 14,
+    statIcon: {
+        fontSize: 24,
     },
 
-    livesLabel: {
-        marginLeft: 7,
+    statContent: {
+        alignItems: "flex-start",
+    },
+
+    statValue: {
+        fontSize: 18,
+        fontWeight: "800",
+        color: colors.text,
+    },
+
+    statLabel: {
+        marginTop: 2,
+
         fontSize: 11,
         fontWeight: "600",
+
         color: colors.textSecondary,
     },
 
-    reward: {
-        paddingHorizontal: 10,
-        paddingVertical: 7,
-        borderRadius: 9,
-        backgroundColor: colors.primaryLight,
-    },
+    statDivider: {
+        width: 1,
+        height: 38,
 
-    rewardText: {
-        fontSize: 11,
-        fontWeight: "800",
-        color: colors.primaryDark,
+        backgroundColor: colors.border,
     },
 
     checkButton: {

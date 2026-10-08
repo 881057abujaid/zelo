@@ -4,8 +4,10 @@ import { useState } from "react";
 
 import { styles } from "./ChallengeScreen.styles";
 import { challengeData } from "./challengeData";
-import { executeCode, submitChallenge } from "./engine/challengeRunner";
+import { executeCode } from "./engine/challengeRunner";
 import { MockExecutor } from "./engine/executor/mockExecutor";
+import { submitChallengeAndUpdateProgress } from "./engine/challengeService";
+import { initialProgress } from "@/features/progress/progressState";
 
 const challenge = challengeData;
 const executor = new MockExecutor();
@@ -13,6 +15,7 @@ const executor = new MockExecutor();
 export default function ChallengeScreen() {
     const [code, setCode] = useState(challenge.starterCode);
     const [output, setOutput] = useState<string | null>(null);
+    const [progress, setProgress] = useState(initialProgress);
     const [validation, setValidation] = useState<{
         isCorrect: boolean;
         message: string;
@@ -32,12 +35,19 @@ export default function ChallengeScreen() {
     };
 
     const handleCheckAnswer = async () => {
-        const result = await submitChallenge(challenge, code, executor);
+        const { result, progress: updatedProgress } = await submitChallengeAndUpdateProgress(
+            challenge,
+            code,
+            progress,
+            executor
+        );
+
+        setProgress(updatedProgress);
 
         setValidation({
             isCorrect: result.isCorrect,
             message: result.isCorrect
-                ? "Great job! Challenge completed."
+                ? "Great job! challenge completed."
                 : result.error ?? "Your answer is not correct.",
         });
     };
@@ -163,21 +173,43 @@ export default function ChallengeScreen() {
                     </View>
                 )}
 
-                {/* Lives */}
-                <View style={styles.bottomInfo}>
-                    <View style={styles.lives}>
-                        <Text style={styles.livesText}>
-                            ❤️ ❤️ ❤️
+                {/* Player Stats */}
+                <View style={styles.statsCard}>
+                    {/* Lives */}
+                    <View style={styles.statItem}>
+                        <Text style={styles.statIcon}>
+                            ❤️
                         </Text>
-                        <Text style={styles.livesLabel}>
-                            3 lives remaining
-                        </Text>
+
+                        <View style={styles.statContent}>
+                            <Text style={styles.statValue}>
+                                {progress.lives}
+                            </Text>
+
+                            <Text style={styles.statLabel}>
+                                Lives Remaining
+                            </Text>
+                        </View>
                     </View>
 
-                    <View style={styles.reward}>
-                        <Text style={styles.rewardText}>
-                            🏆 +50 XP
+                    {/* Divider */}
+                    <View style={styles.statDivider} />
+
+                    {/* Total XP */}
+                    <View style={styles.statItem}>
+                        <Text style={styles.statIcon}>
+                            ⭐
                         </Text>
+
+                        <View style={styles.statContent}>
+                            <Text style={styles.statValue}>
+                                {progress.xp}
+                            </Text>
+
+                            <Text style={styles.statLabel}>
+                                Total XP
+                            </Text>
+                        </View>
                     </View>
                 </View>
 
