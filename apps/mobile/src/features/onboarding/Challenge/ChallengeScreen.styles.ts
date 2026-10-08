@@ -358,68 +358,6 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
     },
 
-    worldCompleteCard: {
-        marginTop: 16,
-        padding: 24,
-        alignItems: "center",
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 20,
-    },
-
-    worldCompleteIcon: {
-        fontSize: 48,
-        marginTop: 12,
-    },
-
-    worldCompleteTitle: {
-        fontSize: 24,
-        fontWeight: "800",
-        color: colors.text,
-    },
-
-    worldCompleteSubtitle: {
-        marginTop: 6,
-        fontSize: 14,
-        fontWeight: "800",
-        color: colors.textSecondary,
-    },
-
-    worldCompleteStats: {
-        width: "100%",
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 22,
-        paddingTop: 18,
-        borderTopWidth: 1,
-        borderColor: colors.border,
-    },
-
-    worldStat: {
-        flex: 1,
-        alignItems: "center",
-    },
-
-    worldStatValue: {
-        fontSize: 20,
-        fontWeight: "800",
-        color: colors.text,
-    },
-
-    worldStatLabel: {
-        marginTop: 4,
-        fontSize: 11,
-        fontWeight: "600",
-        color: colors.textSecondary,
-    },
-
-    worldStatDivider: {
-        width: 1,
-        height: 32,
-        backgroundColor: colors.border,
-    },
-
     successCard: {
         backgroundColor: "#DCFCE7",
         borderColor: "#86EFAC",

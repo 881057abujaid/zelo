@@ -1,6 +1,7 @@
 import { ScrollView, Pressable, Text, View, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
+import { router } from "expo-router";
 
 import { styles } from "./ChallengeScreen.styles";
 import { challengeData } from "./challengeData";
@@ -21,7 +22,6 @@ export default function ChallengeScreen() {
     const [output, setOutput] = useState<string | null>(null);
     const [progress, setProgress] = useState(initialProgress);
     const [isCompleted, setIsCompleted] = useState(false);
-    const [isWorldCompleted, setIsWorldCompleted] = useState(false);
     const [validation, setValidation] = useState<{
         isCorrect: boolean;
         message: string;
@@ -48,30 +48,44 @@ export default function ChallengeScreen() {
     };
 
     const handleCheckAnswer = async () => {
-        const { result, progress: updatedProgress } = await submitChallengeAndUpdateProgress(
-            challenge,
-            code,
-            progress,
-            executor
-        );
+        const { result, progress: updatedProgress } =
+            await submitChallengeAndUpdateProgress(
+                challenge,
+                code,
+                progress,
+                executor
+            );
 
         setProgress(updatedProgress);
 
         setValidation({
             isCorrect: result.isCorrect,
             message: result.isCorrect
-                ? "Great job! challenge completed."
+                ? `Great job! You earned ${result.xpEarned} XP.`
                 : result.error ?? "Your answer is not correct.",
         });
 
-        if (result.isCorrect) {
-            setIsCompleted(true);
+        if (!result.isCorrect) {
+            return;
+        }
 
-            const isLastChallenge = currentChallengeIndex === challengeData.length - 1;
+        setIsCompleted(true);
 
-            if (isLastChallenge) {
-                setIsWorldCompleted(true);
-            }
+        const isLastChallenge =
+            currentChallengeIndex ===
+            challengeData.length - 1;
+
+        if (isLastChallenge) {
+            router.replace({
+                pathname: "/world-completion",
+                params: {
+                    completedChallenges:
+                        updatedProgress.completedChallenges.length.toString(),
+
+                    xpEarned:
+                        updatedProgress.xp.toString(),
+                },
+            });
         }
     };
 
@@ -272,44 +286,6 @@ export default function ChallengeScreen() {
                             <Text style={styles.validationMessage}>
                                 {validation.message}
                             </Text>
-                        </View>
-                    </View>
-                )}
-
-                {/* World Completed */}
-                {isWorldCompleted && (
-                    <View style={styles.worldCompleteCard}>
-                        <Text style={styles.worldCompleteIcon}>
-                            🏆
-                        </Text>
-
-                        <Text style={styles.worldCompleteTitle}>
-                            World Completed!
-                        </Text>
-                        <Text style={styles.worldCompleteSubtitle}>
-                            JavaScript Foundations
-                        </Text>
-
-                        <View style={styles.worldCompleteStats}>
-                            <View style={styles.worldStat}>
-                                <Text style={styles.worldStatValue}>
-                                    {progress.completedChallenges.length}
-                                </Text>
-                                <Text style={styles.worldStatLabel}>
-                                    Challenges
-                                </Text>
-                            </View>
-
-                            <View style={styles.worldStatDivider} />
-
-                            <View style={styles.worldStat}>
-                                <Text style={styles.worldStatValue}>
-                                    {progress.xp}
-                                </Text>
-                                <Text style={styles.worldStatLabel}>
-                                    XP Earned
-                                </Text>
-                            </View>
                         </View>
                     </View>
                 )}
