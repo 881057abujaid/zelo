@@ -8,19 +8,18 @@ import { challengeData } from "./challengeData";
 import { executeCode } from "./engine/challengeRunner";
 import { MockExecutor } from "./engine/executor/mockExecutor";
 import { submitChallengeAndUpdateProgress } from "./engine/challengeService";
-import { initialProgress } from "@/features/progress/progressState";
-import { setCurrentChallenge } from "@/features/progress/progressManager";
+import { useProgressStore } from "@/features/progress/progressStore";
 
 const executor = new MockExecutor();
 
 export default function ChallengeScreen() {
     const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
+    const progress = useProgressStore();
     const challenge = challengeData[currentChallengeIndex];
 
     const [code, setCode] = useState(challenge.starterCode);
     const [output, setOutput] = useState<string | null>(null);
-    const [progress, setProgress] = useState(initialProgress);
     const [isCompleted, setIsCompleted] = useState(false);
     const [validation, setValidation] = useState<{
         isCorrect: boolean;
@@ -56,7 +55,7 @@ export default function ChallengeScreen() {
                 executor
             );
 
-        setProgress(updatedProgress);
+        progress.applyProgress(updatedProgress);
 
         setValidation({
             isCorrect: result.isCorrect,
@@ -302,9 +301,7 @@ export default function ChallengeScreen() {
                             }
 
                             setCurrentChallengeIndex(currentChallengeIndex + 1);
-                            setProgress(
-                                setCurrentChallenge(progress, nextChallenge.id)
-                            );
+                            progress.setCurrentChallenge(nextChallenge.id);
                         }}
                     >
                         <Text style={styles.nextButtonText}>
