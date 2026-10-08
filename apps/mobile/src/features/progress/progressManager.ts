@@ -33,3 +33,13 @@ export function applyChallengeResult(
         lives: Math.max(progress.lives - 1, 0),
     };
 }
+
+export function setCurrentChallenge(
+    progress: PlayerProgress,
+    challengeId: string,
+): PlayerProgress {
+    return {
+        ...progress,
+        currentChallengeId: challengeId,
+    };
+}

@@ -1,6 +1,6 @@
 import { ScrollView, Pressable, Text, View, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { styles } from "./ChallengeScreen.styles";
 import { challengeData } from "./challengeData";
@@ -8,18 +8,31 @@ import { executeCode } from "./engine/challengeRunner";
 import { MockExecutor } from "./engine/executor/mockExecutor";
 import { submitChallengeAndUpdateProgress } from "./engine/challengeService";
 import { initialProgress } from "@/features/progress/progressState";
+import { setCurrentChallenge } from "@/features/progress/progressManager";
 
-const challenge = challengeData;
 const executor = new MockExecutor();
 
 export default function ChallengeScreen() {
+    const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+
+    const challenge = challengeData[currentChallengeIndex];
+
     const [code, setCode] = useState(challenge.starterCode);
     const [output, setOutput] = useState<string | null>(null);
     const [progress, setProgress] = useState(initialProgress);
+    const [isCompleted, setIsCompleted] = useState(false);
+    const [isWorldCompleted, setIsWorldCompleted] = useState(false);
     const [validation, setValidation] = useState<{
         isCorrect: boolean;
         message: string;
     } | null>(null);
+
+    useEffect(() => {
+        setCode(challenge.starterCode);
+        setOutput(null);
+        setValidation(null);
+        setIsCompleted(false);
+    }, [currentChallengeIndex]);
 
     const handleRunCode = async () => {
         setOutput(null);
@@ -50,6 +63,16 @@ export default function ChallengeScreen() {
                 ? "Great job! challenge completed."
                 : result.error ?? "Your answer is not correct.",
         });
+
+        if (result.isCorrect) {
+            setIsCompleted(true);
+
+            const isLastChallenge = currentChallengeIndex === challengeData.length - 1;
+
+            if (isLastChallenge) {
+                setIsWorldCompleted(true);
+            }
+        }
     };
 
     return (
@@ -215,15 +238,20 @@ export default function ChallengeScreen() {
 
                 {/* Check Answer */}
                 <Pressable
-                    style={styles.checkButton}
+                    style={[
+                        styles.checkButton,
+                        isCompleted && styles.disabledButton,
+                    ]}
                     onPress={handleCheckAnswer}
                 >
                     <Text style={styles.checkButtonText}>
-                        Check Answer
+                        {isCompleted ? "Challenge Completed ✓" : "Check Answer"}
                     </Text>
-                    <Text style={styles.arrow}>
-                        →
-                    </Text>
+                    {!isCompleted && (
+                        <Text style={styles.arrow}>
+                            →
+                        </Text>
+                    )}
                 </Pressable>
 
                 {validation && (
@@ -246,6 +274,70 @@ export default function ChallengeScreen() {
                             </Text>
                         </View>
                     </View>
+                )}
+
+                {/* World Completed */}
+                {isWorldCompleted && (
+                    <View style={styles.worldCompleteCard}>
+                        <Text style={styles.worldCompleteIcon}>
+                            🏆
+                        </Text>
+
+                        <Text style={styles.worldCompleteTitle}>
+                            World Completed!
+                        </Text>
+                        <Text style={styles.worldCompleteSubtitle}>
+                            JavaScript Foundations
+                        </Text>
+
+                        <View style={styles.worldCompleteStats}>
+                            <View style={styles.worldStat}>
+                                <Text style={styles.worldStatValue}>
+                                    {progress.completedChallenges.length}
+                                </Text>
+                                <Text style={styles.worldStatLabel}>
+                                    Challenges
+                                </Text>
+                            </View>
+
+                            <View style={styles.worldStatDivider} />
+
+                            <View style={styles.worldStat}>
+                                <Text style={styles.worldStatValue}>
+                                    {progress.xp}
+                                </Text>
+                                <Text style={styles.worldStatLabel}>
+                                    XP Earned
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                )}
+
+                {/* Next Challenge Navigation Button */}
+                {isCompleted && currentChallengeIndex < challengeData.length - 1 && (
+                    <Pressable
+                        style={styles.nextButton}
+                        onPress={() => {
+                            const nextChallenge = challengeData[currentChallengeIndex + 1];
+
+                            if (!nextChallenge) {
+                                return;
+                            }
+
+                            setCurrentChallengeIndex(currentChallengeIndex + 1);
+                            setProgress(
+                                setCurrentChallenge(progress, nextChallenge.id)
+                            );
+                        }}
+                    >
+                        <Text style={styles.nextButtonText}>
+                            Next Challenge
+                        </Text>
+                        <Text style={styles.arrow}>
+                            →
+                        </Text>
+                    </Pressable>
                 )}
             </ScrollView>
         </SafeAreaView>

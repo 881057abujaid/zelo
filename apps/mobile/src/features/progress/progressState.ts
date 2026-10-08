@@ -5,7 +5,7 @@ export const initialProgress: PlayerProgress = {
 
     lives: 3,
 
-    currentChallengeId: null,
+    currentChallengeId: "js-variables-01",
 
     completedChallenges: [],
 

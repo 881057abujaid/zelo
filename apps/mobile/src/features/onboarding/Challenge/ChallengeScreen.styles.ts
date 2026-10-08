@@ -283,6 +283,27 @@ export const styles = StyleSheet.create({
         color: colors.surface,
     },
 
+    disabledButton: {
+        opacity: 0.5,
+    },
+
+    nextButton: {
+        marginTop: 12,
+        minHeight: 54,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 20,
+        backgroundColor: colors.primary,
+        borderRadius: 14,
+    },
+
+    nextButtonText: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#FFFFFF",
+    },
+
     arrow: {
         marginLeft: 10,
         fontSize: 22,
@@ -335,6 +356,68 @@ export const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
+    },
+
+    worldCompleteCard: {
+        marginTop: 16,
+        padding: 24,
+        alignItems: "center",
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 20,
+    },
+
+    worldCompleteIcon: {
+        fontSize: 48,
+        marginTop: 12,
+    },
+
+    worldCompleteTitle: {
+        fontSize: 24,
+        fontWeight: "800",
+        color: colors.text,
+    },
+
+    worldCompleteSubtitle: {
+        marginTop: 6,
+        fontSize: 14,
+        fontWeight: "800",
+        color: colors.textSecondary,
+    },
+
+    worldCompleteStats: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 22,
+        paddingTop: 18,
+        borderTopWidth: 1,
+        borderColor: colors.border,
+    },
+
+    worldStat: {
+        flex: 1,
+        alignItems: "center",
+    },
+
+    worldStatValue: {
+        fontSize: 20,
+        fontWeight: "800",
+        color: colors.text,
+    },
+
+    worldStatLabel: {
+        marginTop: 4,
+        fontSize: 11,
+        fontWeight: "600",
+        color: colors.textSecondary,
+    },
+
+    worldStatDivider: {
+        width: 1,
+        height: 32,
+        backgroundColor: colors.border,
     },
 
     successCard: {

@@ -9,41 +9,45 @@ export function validateVariable(
     code: string,
     config: VariableValidation
 ): ValidationResult {
-    const normalizedCode = code.replace(/\s+/g, " ").trim();
+    const normalizedCode = code
+        .replace(/\s+/g, " ")
+        .trim();
 
     const variableRegex = new RegExp(
-        `\\b(const|let|var)\\s+${config.variableName}\\s*=`
+        `\\b(const|let|var)\\s+${config.variableName}\\s*=\\s*(.+)`
     );
 
-    const hasVariable = variableRegex.test(normalizedCode);
+    const match = normalizedCode.match(variableRegex);
 
-    if (!hasVariable) {
+    if (!match) {
         return {
             isCorrect: false,
             message: `Create a variable called "${config.variableName}".`,
         };
     }
 
-    const valueRegex = new RegExp(
-        `\\b(?:const|let|var)\\s+${config.variableName}\\s*=\\s*["']([^"']*)["']`
-    );
+    const value = match[2]
+        .trim()
+        .replace(/;$/, "")
+        .trim();
 
-    const match = normalizedCode.match(valueRegex);
-
-    if (!match) {
+    if (!value) {
         return {
             isCorrect: false,
             message: `Store a value inside the "${config.variableName}" variable.`,
         };
     }
 
-    const value = match[1].trim();
+    if (!config.allowEmpty) {
+        const isEmptyString =
+            /^["']\s*["']$/.test(value);
 
-    if (!config.allowEmpty && !value) {
-        return {
-            isCorrect: false,
-            message: `Your "${config.variableName}" variable cannot be empty.`,
-        };
+        if (isEmptyString) {
+            return {
+                isCorrect: false,
+                message: `Your "${config.variableName}" variable cannot be empty.`,
+            };
+        }
     }
 
     return {
