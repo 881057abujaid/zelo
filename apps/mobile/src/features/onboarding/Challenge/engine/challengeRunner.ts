@@ -41,6 +41,28 @@ export async function submitChallenge(
         };
     }
 
+    const supportedValidationTypes = [
+        "variable",
+        "expectedValue",
+        "expression",
+    ] as const;
+
+    if (
+        !supportedValidationTypes.includes(
+            challenge.validation.type as (typeof supportedValidationTypes)[number]
+        )
+    ) {
+        return {
+            challengeId: challenge.id,
+            executed: false,
+            isCorrect: false,
+            output: "",
+            error: `Unsupported validation type: ${challenge.validation.type}`,
+            xpEarned: 0,
+            livesRemaining: challenge.lives,
+        };
+    }
+
     const executionResult = await executeCode(code, executor);
 
     // Execution failed

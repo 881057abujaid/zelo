@@ -22,7 +22,23 @@ export async function submitChallengeAndUpdateProgress(
     result: ChallengeResult;
     progress: PlayerProgress;
 }> {
+    if (progress.lives <= 0) {
+        return {
+            result: {
+                challengeId: challenge.id,
+                executed: false,
+                isCorrect: false,
+                output: "",
+                error: "No lives remaining. Restore your lives to continue.",
+                xpEarned: 0,
+                livesRemaining: 0,
+            },
+            progress,
+        };
+    }
+
     const result = await submitChallenge(challenge, code, executor);
+
     const updateProgress = applyChallengeResult(progress, result);
 
     return {
