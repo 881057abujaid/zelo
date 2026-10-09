@@ -13,9 +13,35 @@ import { useProgressStore } from "@/features/progress/progressStore";
 const executor = new MockExecutor();
 
 export default function ChallengeScreen() {
-    const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
-
     const progress = useProgressStore();
+
+    const getNextChallengeIndex = () => {
+        const savedIndex = challengeData.findIndex(
+            (item) => item.id === progress.currentChallengeId
+        );
+
+        if (
+            savedIndex !== -1 &&
+            !progress.completedChallenges.includes(
+                challengeData[savedIndex].id
+            )
+        ) {
+            return savedIndex;
+        }
+
+        const nextIncompleteIndex = challengeData.findIndex(
+            (item) =>
+                !progress.completedChallenges.includes(item.id)
+        );
+
+        return nextIncompleteIndex === -1
+            ? challengeData.length - 1
+            : nextIncompleteIndex;
+    };
+
+    const [currentChallengeIndex, setCurrentChallengeIndex] =
+        useState(getNextChallengeIndex);
+
     const challenge = challengeData[currentChallengeIndex];
     const progressPercentage = (challenge.number / challenge.total) * 100;
 
@@ -342,13 +368,15 @@ export default function ChallengeScreen() {
                     <Pressable
                         style={styles.nextButton}
                         onPress={() => {
-                            const nextChallenge = challengeData[currentChallengeIndex + 1];
+                            const nextChallengeIndex = currentChallengeIndex + 1;
+                            const nextChallenge = challengeData[nextChallengeIndex];
 
                             if (!nextChallenge) {
                                 return;
                             }
 
-                            setCurrentChallengeIndex(currentChallengeIndex + 1);
+                            setCurrentChallengeIndex(nextChallengeIndex);
+
                             progress.setCurrentChallenge(nextChallenge.id);
                         }}
                     >
