@@ -55,10 +55,9 @@ export const challengeData: Challenge[] = [
         lives: 3,
 
         validation: {
-            type: "variable",
+            type: "expectedValue",
             variableName: "age",
-            required: true,
-            allowEmpty: false,
+            expectedValue: 21,
         },
     },
     {
@@ -76,10 +75,9 @@ export const challengeData: Challenge[] = [
         xp: 50,
         lives: 3,
         validation: {
-            type: "variable",
+            type: "expectedValue",
             variableName: "isDeveloper",
-            required: true,
-            allowEmpty: false,
+            expectedValue: true,
         },
     },
     {
@@ -97,10 +95,9 @@ export const challengeData: Challenge[] = [
         xp: 50,
         lives: 3,
         validation: {
-            type: "variable",
+            type: "expression",
             variableName: "total",
-            required: true,
-            allowEmpty: false,
+            expectedExpression: "10 + 5",
         },
     },
     {
@@ -118,10 +115,9 @@ export const challengeData: Challenge[] = [
         xp: 50,
         lives: 3,
         validation: {
-            type: "variable",
+            type: "expectedValue",
             variableName: "message",
-            required: true,
-            allowEmpty: false,
+            expectedValue: "Adult",
         },
     }
 ];

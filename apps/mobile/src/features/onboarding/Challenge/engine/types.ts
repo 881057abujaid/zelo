@@ -11,6 +11,7 @@ export type ChallengeType =
 
 export type ValidationConfig =
     | VariableValidation
+    | ExpectedValueValidation
     | OutputValidation
     | TestCaseValidation
     | ExpressionValidation;
@@ -41,7 +42,14 @@ export type TestCaseValidation = {
 
 export type ExpressionValidation = {
     type: "expression";
-    expectedValue: unknown;
+    variableName: string;
+    expectedExpression: string;
+};
+
+export type ExpectedValueValidation = {
+    type: "expectedValue";
+    variableName: string;
+    expectedValue: string | number | boolean;
 };
 
 export type Challenge = {
