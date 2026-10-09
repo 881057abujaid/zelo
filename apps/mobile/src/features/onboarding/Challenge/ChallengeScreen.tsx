@@ -17,6 +17,7 @@ export default function ChallengeScreen() {
 
     const progress = useProgressStore();
     const challenge = challengeData[currentChallengeIndex];
+    const progressPercentage = (challenge.number / challenge.total) * 100;
 
     const [code, setCode] = useState(challenge.starterCode);
     const [isOutofLives, setISOutofLives] = useState(false);
@@ -131,7 +132,12 @@ export default function ChallengeScreen() {
                     </View>
 
                     <View style={styles.progressTrack}>
-                        <View style={styles.progressFill} />
+                        <View
+                            style={[
+                                styles.progressFill,
+                                { width: `${progressPercentage}%` },
+                            ]}
+                        />
                     </View>
                 </View>
 

@@ -70,7 +70,6 @@ export const styles = StyleSheet.create({
     },
 
     progressFill: {
-        width: "20%",
         height: "100%",
         borderRadius: 4,
         backgroundColor: colors.primary,
