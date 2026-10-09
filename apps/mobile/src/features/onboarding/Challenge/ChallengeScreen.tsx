@@ -19,6 +19,7 @@ export default function ChallengeScreen() {
     const challenge = challengeData[currentChallengeIndex];
 
     const [code, setCode] = useState(challenge.starterCode);
+    const [isOutofLives, setISOutofLives] = useState(false);
     const [output, setOutput] = useState<string | null>(null);
     const [isCompleted, setIsCompleted] = useState(false);
     const [validation, setValidation] = useState<{
@@ -64,8 +65,8 @@ export default function ChallengeScreen() {
                 : result.error ?? "Your answer is not correct.",
         });
 
-        if (!result.isCorrect) {
-            return;
+        if (!result.isCorrect && updatedProgress.lives === 0) {
+            setISOutofLives(true);
         }
 
         setIsCompleted(true);
@@ -87,6 +88,16 @@ export default function ChallengeScreen() {
             });
         }
     };
+
+    const handleRetryChallenge = () => {
+        progress.restoreLives();
+
+        setCode(challenge.starterCode);
+        setOutput(null);
+        setValidation(null);
+        setIsCompleted(false);
+        setISOutofLives(false);
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -253,20 +264,22 @@ export default function ChallengeScreen() {
                 <Pressable
                     style={[
                         styles.checkButton,
-                        isCompleted && styles.disabledButton,
+                        (isCompleted || progress.lives <= 0) && styles.disabledButton,
                     ]}
+                    disabled={isCompleted || progress.lives <= 0}
                     onPress={handleCheckAnswer}
                 >
                     <Text style={styles.checkButtonText}>
                         {isCompleted ? "Challenge Completed ✓" : "Check Answer"}
                     </Text>
-                    {!isCompleted && (
+                    {!isCompleted && progress.lives > 0 && (
                         <Text style={styles.arrow}>
                             →
                         </Text>
                     )}
                 </Pressable>
 
+                {/* Validation */}
                 {validation && (
                     <View style={[
                         styles.validationCard,
@@ -286,6 +299,35 @@ export default function ChallengeScreen() {
                                 {validation.message}
                             </Text>
                         </View>
+                    </View>
+                )}
+
+                {/* Out Of Lives */}
+                {isOutofLives && (
+                    <View style={styles.outOfLivesCard}>
+                        <Text style={styles.outOfLivesIcon}>
+                            💔
+                        </Text>
+                        <Text style={styles.outOfLivesTitle}>
+                            Out of Lives
+                        </Text>
+                        <Text style={styles.outOfLivesMessage}>
+                            You've used all your lives for this
+                            challenge. Take a break and try again.
+                        </Text>
+
+                        {/* Retry Button */}
+                        <Pressable
+                            style={styles.retryButton}
+                            onPress={handleRetryChallenge}
+                        >
+                            <Text style={styles.retryButtonText}>
+                                Retry Challenge
+                            </Text>
+                            <Text style={styles.arrow}>
+                                →
+                            </Text>
+                        </Pressable>
                     </View>
                 )}
 

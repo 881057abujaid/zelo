@@ -1,12 +1,13 @@
 import { create } from "zustand";
 
 import type { PlayerProgress } from "./types";
-import { initialProgress } from "./progressState";
+import { initialProgress, MAX_LIVES } from "./progressState";
 
 type ProgressStore = PlayerProgress & {
     applyProgress: (updatedProgress: PlayerProgress) => void;
-    resetProgress: () => void;
     setCurrentChallenge: (challengeId: string) => void;
+    restoreLives: () => void;
+    resetProgress: () => void;
 };
 
 export const useProgressStore = create<ProgressStore>((set) => ({
@@ -19,6 +20,12 @@ export const useProgressStore = create<ProgressStore>((set) => ({
     setCurrentChallenge: (challengeId) => {
         set({
             currentChallengeId: challengeId,
+        });
+    },
+
+    restoreLives: () => {
+        set({
+            lives: MAX_LIVES,
         });
     },
 

@@ -284,7 +284,8 @@ export const styles = StyleSheet.create({
     },
 
     disabledButton: {
-        opacity: 0.5,
+        opacity: 0.7,
+        backgroundColor: "#D1D5DB",
     },
 
     nextButton: {
@@ -388,5 +389,52 @@ export const styles = StyleSheet.create({
         fontSize: 13,
         lineHeight: 19,
         color: colors.textSecondary,
+    },
+
+    outOfLivesCard: {
+        marginTop: 16,
+        padding: 20,
+        alignItems: "center",
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 18,
+    },
+
+    outOfLivesIcon: {
+        fontSize: 36,
+    },
+
+    outOfLivesTitle: {
+        marginTop: 8,
+        fontSize: 20,
+        fontWeight: "800",
+        color: colors.text,
+    },
+
+    outOfLivesMessage: {
+        marginTop: 6,
+        fontSize: 13,
+        lineHeight: 19,
+        textAlign: "center",
+        color: colors.textSecondary,
+    },
+
+    retryButton: {
+        width: "100%",
+        minHeight: 50,
+        marginTop: 20,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 18,
+        backgroundColor: colors.primary,
+        borderRadius: 14,
+    },
+
+    retryButtonText: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: "#FFFFFF",
     },
 });
