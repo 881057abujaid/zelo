@@ -1,7 +1,7 @@
 import type { Challenge, ChallengeResult } from "./types";
 import type { ExecutionResult } from "./executor/types";
 import { validateExpectedValue } from "./validators/expectedValueValidator";
-import { validateVariable } from "./validators/variableValidator";
+import { validateVariableWithAST } from "./validators/astVariableValidator";
 import { validateExpression } from "./validators/expressionValidator";
 import { validateSyntax } from "./validators/syntaxValidator";
 
@@ -71,7 +71,7 @@ export async function submitChallenge(
 
     switch (validation.type) {
         case "variable": {
-            const result = validateVariable(code, validation);
+            const result = validateVariableWithAST(code, validation);
 
             isCorrect = result.isCorrect;
             validationMessage = result.message;
