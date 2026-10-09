@@ -1,8 +1,8 @@
 import type { Challenge, ChallengeResult } from "./types";
 import type { ExecutionResult } from "./executor/types";
-import { validateExpectedValue } from "./validators/expectedValueValidator";
 import { validateVariableWithAST } from "./validators/astVariableValidator";
-import { validateExpression } from "./validators/expressionValidator";
+import { validateExpectedValueWithAST } from "./validators/astExpectedValueValidator";
+import { validateExpressionWithAST } from "./validators/astExpressionValidator";
 import { validateSyntax } from "./validators/syntaxValidator";
 
 type Executor = {
@@ -80,7 +80,7 @@ export async function submitChallenge(
         }
 
         case "expectedValue": {
-            const result = validateExpectedValue(
+            const result = validateExpectedValueWithAST(
                 code,
                 validation
             );
@@ -91,7 +91,7 @@ export async function submitChallenge(
         }
 
         case "expression": {
-            const result = validateExpression(code, validation);
+            const result = validateExpressionWithAST(code, validation);
 
             isCorrect = result.isCorrect;
             validationMessage = result.message;
