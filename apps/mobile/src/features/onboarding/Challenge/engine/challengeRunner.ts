@@ -3,6 +3,7 @@ import type { ExecutionResult } from "./executor/types";
 import { validateExpectedValue } from "./validators/expectedValueValidator";
 import { validateVariable } from "./validators/variableValidator";
 import { validateExpression } from "./validators/expressionValidator";
+import { validateSyntax } from "./validators/syntaxValidator";
 
 type Executor = {
     execute: (code: string) => Promise<ExecutionResult>;
@@ -26,6 +27,20 @@ export async function submitChallenge(
     code: string,
     executor: Executor
 ): Promise<ChallengeResult> {
+    const syntaxResult = validateSyntax(code);
+
+    if (!syntaxResult.isValid) {
+        return {
+            challengeId: challenge.id,
+            executed: false,
+            isCorrect: false,
+            output: "",
+            error: syntaxResult.error,
+            xpEarned: 0,
+            livesRemaining: challenge.lives,
+        };
+    }
+
     const executionResult = await executeCode(code, executor);
 
     // Execution failed

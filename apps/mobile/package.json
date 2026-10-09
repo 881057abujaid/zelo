@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@babel/parser": "^8.0.7",
     "@expo/ui": "~57.0.21",
     "expo": "~57.0.26",
     "expo-constants": "~57.0.20",
