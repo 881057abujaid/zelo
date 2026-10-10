@@ -7,7 +7,206 @@ datasource db {
   provider = "postgresql"
 }
 
-model ConnectionTest {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum AttemptStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+// ==========================================
+// USER
+// User accounts and profiles
+// ==========================================
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  displayName  String?
+  avatarUrl    String?
+  totalXp      Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  progress     UserProgress[]
+  attempts     ChallengeAttempt[]
+  achievements UserAchievement[]
+  streak       UserStreak?
+
+  @@index([createdAt])
+}
+
+// ==========================================
+// WORLD
+// Learning paths such as JavaScript, React
+// ==========================================
+
+model World {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  title       String
+  description String?  @db.Text
+  icon        String?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  challenges Challenge[]
+
+  @@index([isPublished, sortOrder])
+}
+
+// ==========================================
+// CHALLENGE
+// Individual lessons and coding challenges
+// ==========================================
+
+model Challenge {
+  id           String     @id @default(uuid()) @db.Uuid
+  worldId      String     @db.Uuid
+  slug         String
+  title        String
+  description  String?    @db.Text
+  instructions String     @db.Text
+  difficulty   Difficulty @default(EASY)
+  xpReward     Int        @default(10)
+  orderIndex   Int        @default(0)
+  isPublished  Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  world    World              @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  progress UserProgress[]
+  attempts ChallengeAttempt[]
+
+  // A slug only needs to be unique within its world
+  @@unique([worldId, slug])
+  @@index([worldId, orderIndex])
+  @@index([difficulty])
+  @@index([isPublished])
+}
+
+// ==========================================
+// USER PROGRESS
+// One progress record per user per challenge
+// ==========================================
+
+model UserProgress {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  challengeId String    @db.Uuid
+  isCompleted Boolean   @default(false)
+  xpEarned    Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate progress records
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
+  @@index([isCompleted])
+}
+
+// ==========================================
+// CHALLENGE ATTEMPT
+// Stores individual submissions and results
+// ==========================================
+
+model ChallengeAttempt {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  challengeId     String        @db.Uuid
+  status          AttemptStatus @default(PENDING)
+  submission      String?       @db.Text
+  errorMessage    String?       @db.Text
+  executionTimeMs Int?
+  executedAt      DateTime      @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, executedAt])
+  @@index([challengeId])
+  @@index([status])
+}
+
+// ==========================================
+// ACHIEVEMENT
+// Available badges and rewards
+// ==========================================
+
+model Achievement {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  title       String
+  description String?  @db.Text
+  icon        String?
+  xpRequired  Int?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Users who earned this achievement
+  users UserAchievement[]
+
+  @@index([isPublished])
+}
+
+// ==========================================
+// USER ACHIEVEMENT
+// Tracks which user earned which achievement
+// ==========================================
+
+model UserAchievement {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  achievementId String   @db.Uuid
+  earnedAt      DateTime @default(now())
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  // A user can earn each achievement only once
+  @@unique([userId, achievementId])
+  @@index([userId, earnedAt])
+  @@index([achievementId])
+}
+
+// ==========================================
+// USER STREAK
+// Daily learning activity
+// ==========================================
+
+model UserStreak {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @unique @db.Uuid
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  lastActivityAt DateTime? @db.Date
+  updatedAt     DateTime  @updatedAt
+
+  // One streak record per user
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
