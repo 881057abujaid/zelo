@@ -1,7 +1,9 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { env } from "../../config/env.js";
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../config/prisma.js";
-import type { RegisterInput } from "./auth.validation.js";
+import type { RegisterInput, LoginInput } from "./auth.validation.js";
 
 const SALT_ROUNDS = 12;
 
@@ -65,4 +67,50 @@ export async function registerUser(input: RegisterInput) {
 
         throw error;
     }
+}
+
+export async function loginUser(input: LoginInput) {
+    const user = await prisma.user.findUnique({
+        where: {
+            email: input.email,
+        },
+    });
+
+    if (!user) {
+        throw new Error("INVALID_CREDENTIALS");
+    }
+
+    const passwordMatches = await bcrypt.compare(
+        input.password,
+        user.passwordHash
+    );
+
+    if (!passwordMatches) {
+        throw new Error("INVALID_CREDENTIALS");
+    }
+
+    const accessToken = jwt.sign(
+        {
+            sub: user.id,
+            username: user.username,
+        },
+        env.JWT_ACCESS_SECRET,
+        {
+            expiresIn: "15m",
+            issuer: "zelo-api",
+            audience: "zelo-mobile",
+        }
+    );
+
+    return {
+        accessToken,
+        user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            displayName: user.displayName,
+            avatarUrl: user.avatarUrl,
+            totalXp: user.totalXp,
+        },
+    };
 }
