@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { env } from "../../config/env.js";
-import { Prisma } from "../../generated/prisma/client.js";
-import { prisma } from "../../config/prisma.js";
+import { env } from "@/config/env.js";
+import { Prisma } from "@/generated/prisma/client.js";
+import { prisma } from "@/config/prisma.js";
 import type { RegisterInput, LoginInput } from "./auth.validation.js";
 
 const SALT_ROUNDS = 12;

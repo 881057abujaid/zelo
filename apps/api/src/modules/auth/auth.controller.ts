@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { registerSchema, loginSchema } from "./auth.validation.js";
 import { registerUser, loginUser, getCurrentUser } from "./auth.service.js";
-import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { AuthenticatedRequest } from "@/middlewares/auth.middleware.js";
 
 export async function register(
     req: Request,
