@@ -52,6 +52,7 @@ export default function WelcomeScreen() {
                     </Pressable>
 
                     <Pressable
+                        onPress={() => router.push("/login")}
                         style={({ pressed }) => [
                             styles.loginButton,
                             pressed && styles.loginButtonPressed,
