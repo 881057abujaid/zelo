@@ -13,6 +13,7 @@ import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { styles } from "./RegisterScreen.styles";
+import { registerSchema } from "./validations/register.schema";
 
 export default function RegisterScreen() {
     const [username, setUsername] = useState("");
@@ -23,6 +24,44 @@ export default function RegisterScreen() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [errors, setErrors] = useState<
+        Partial<Record<
+            "username" | "displayName" | "email" | "password" | "confirmPassword",
+            string
+        >>
+    >({});
+
+    const validateForm = () => {
+        const result = registerSchema.safeParse({
+            username,
+            displayName,
+            email,
+            password,
+            confirmPassword,
+        });
+
+        if (!result.success) {
+            const fieldErrors: typeof errors = {};
+
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0];
+
+                if (
+                    typeof field === "string" &&
+                    !fieldErrors[field as keyof typeof fieldErrors]
+                ) {
+                    fieldErrors[field as keyof typeof fieldErrors] =
+                        issue.message;
+                }
+            });
+
+            setErrors(fieldErrors);
+            return false;
+        }
+
+        setErrors({});
+        return true;
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -89,6 +128,12 @@ export default function RegisterScreen() {
                             <Text style={styles.helperText}>
                                 Letters, numbers and underscores only.
                             </Text>
+
+                            {errors.username && (
+                                <Text style={styles.errorText}>
+                                    {errors.username}
+                                </Text>
+                            )}
                         </View>
 
                         {/* Display name */}
@@ -107,6 +152,12 @@ export default function RegisterScreen() {
                                 maxLength={50}
                                 style={styles.input}
                             />
+
+                            {errors.displayName && (
+                                <Text style={styles.errorText}>
+                                    {errors.displayName}
+                                </Text>
+                            )}
                         </View>
 
                         {/* Email */}
@@ -125,6 +176,12 @@ export default function RegisterScreen() {
                                 textContentType="emailAddress"
                                 style={styles.input}
                             />
+
+                            {errors.email && (
+                                <Text style={styles.errorText}>
+                                    {errors.email}
+                                </Text>
+                            )}
                         </View>
 
                         {/* Password */}
@@ -161,6 +218,12 @@ export default function RegisterScreen() {
                             <Text style={styles.helperText}>
                                 Use at least 8 characters.
                             </Text>
+
+                            {errors.password && (
+                                <Text style={styles.errorText}>
+                                    {errors.password}
+                                </Text>
+                            )}
                         </View>
 
                         {/* Confirm password */}
@@ -196,12 +259,25 @@ export default function RegisterScreen() {
                                     </Text>
                                 </Pressable>
                             </View>
+
+                            {errors.confirmPassword && (
+                                <Text style={styles.errorText}>
+                                    {errors.confirmPassword}
+                                </Text>
+                            )}
                         </View>
 
                         {/* Create account */}
                         <Pressable
                             onPress={() => {
-                                // Registration API integration comes next.
+                                const isValid = validateForm();
+
+                                if (!isValid) {
+                                    return;
+                                }
+
+                                // API integration baad mein add karenge.
+                                console.log("Registration form is valid.");
                             }}
                             style={({ pressed }) => [
                                 styles.primaryButton,
