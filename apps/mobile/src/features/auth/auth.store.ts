@@ -13,6 +13,14 @@ import {
     saveAccessToken,
 } from "@/lib/secure-storage";
 
+import {
+    updateUserProfile,
+} from "@/features/profile/profile.service";
+
+import type {
+    UpdateProfilePayload,
+} from "@/features/profile/profile.service";
+
 interface AuthState {
     user: AuthenticatedUser | null;
     isAuthenticated: boolean;
@@ -26,6 +34,10 @@ interface AuthState {
     logout: () => Promise<void>;
 
     restoreSession: () => Promise<void>;
+
+    updateProfile: (
+        payload: UpdateProfilePayload,
+    ) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -106,5 +118,13 @@ export const useAuthStore = create<AuthState>((set) => ({
                 isRestoringSession: false,
             });
         }
+    },
+
+    updateProfile: async (payload) => {
+        const updatedUser = await updateUserProfile(payload);
+
+        set({
+            user: updatedUser,
+        });
     },
 }));

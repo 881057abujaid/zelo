@@ -86,6 +86,22 @@ export const styles = StyleSheet.create({
         textAlign: "center",
     },
 
+    editProfileButton: {
+        marginTop: 16,
+        paddingHorizontal: 20,
+        paddingVertical: 11,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.primary,
+        backgroundColor: "#FFFFFF",
+    },
+
+    editProfileButtonText: {
+        color: colors.primary,
+        fontSize: 14,
+        fontWeight: "700",
+    },
+
     memberBadge: {
         marginTop: 16,
         paddingHorizontal: 14,

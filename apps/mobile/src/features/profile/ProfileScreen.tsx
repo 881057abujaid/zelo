@@ -139,6 +139,16 @@ export default function ProfileScreen() {
                         {user?.email ?? ""}
                     </Text>
 
+                    <Pressable
+                        accessibilityRole="button"
+                        onPress={() => router.push("/edit-profile")}
+                        style={styles.editProfileButton}
+                    >
+                        <Text style={styles.editProfileButtonText}>
+                            ✏️ Edit Profile
+                        </Text>
+                    </Pressable>
+
                     <View style={styles.memberBadge}>
                         <Text style={styles.memberBadgeText}>
                             🚀 CODE EXPLORER
