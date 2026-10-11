@@ -1,11 +1,17 @@
 import { create } from "zustand";
 
 import type { AuthenticatedUser } from "./auth.service";
+
+import {
+    getCurrentUser,
+    isUnauthorizedError,
+} from "./auth.service";
+
 import {
     getAccessToken,
     removeAccessToken,
     saveAccessToken,
-} from "../../lib/secure-storage";
+} from "@/lib/secure-storage";
 
 interface AuthState {
     user: AuthenticatedUser | null;
@@ -37,15 +43,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     logout: async () => {
-        await removeAccessToken();
-
-        set({
-            user: null,
-            isAuthenticated: false,
-        });
+        try {
+            await removeAccessToken();
+        } finally {
+            set({
+                user: null,
+                isAuthenticated: false,
+            });
+        }
     },
 
     restoreSession: async () => {
+        set({
+            isRestoringSession: true,
+        });
+
         try {
             const token = await getAccessToken();
 
@@ -54,25 +66,45 @@ export const useAuthStore = create<AuthState>((set) => ({
                     user: null,
                     isAuthenticated: false,
                 });
+
                 return;
             }
 
-            // Token mil gaya, lekin user ki identity
-            // abhi backend se verify nahi hui hai.
-            // Protected navigation se pehle verification add karenge.
-            set({
-                user: null,
-                isAuthenticated: false,
-            });
-        } catch (error) {
-            console.error("Session restoration failed:", error);
+            // Ask the backend to verify the saved token.
+            const user = await getCurrentUser(token);
 
             set({
+                user,
+                isAuthenticated: true,
+            });
+        } catch (error) {
+            set({
                 user: null,
                 isAuthenticated: false,
             });
+
+            if (isUnauthorizedError(error)) {
+                // Invalid or expired token: remove it.
+                try {
+                    await removeAccessToken();
+                } catch (storageError) {
+                    console.error(
+                        "Unable to remove invalid access token:",
+                        storageError,
+                    );
+                }
+            } else {
+                // Network/server errors do not necessarily
+                // mean the saved token is invalid.
+                console.error(
+                    "Session restoration failed:",
+                    error,
+                );
+            }
         } finally {
-            set({ isRestoringSession: false });
+            set({
+                isRestoringSession: false,
+            });
         }
     },
 }));

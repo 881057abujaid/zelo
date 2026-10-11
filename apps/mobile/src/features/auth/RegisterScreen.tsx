@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "./RegisterScreen.styles";
 import { registerSchema } from "./validations/register.schema";
 import {
-    getRegisterErrorMessage,
+    getAuthErrorMessage,
     registerUser,
 } from "./auth.service";
 
@@ -103,7 +103,7 @@ export default function RegisterScreen() {
 
             console.log("Registered user:", response.data.user);
         } catch (error: unknown) {
-            setApiError(getRegisterErrorMessage(error));
+            setApiError(getAuthErrorMessage(error));
         } finally {
             setIsSubmitting(false);
         }

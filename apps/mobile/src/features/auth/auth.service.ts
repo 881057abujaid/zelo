@@ -47,6 +47,14 @@ export interface LoginResponse {
     };
 }
 
+interface CurrentUserResponse {
+    success: true;
+    message: string;
+    data: {
+        user: AuthenticatedUser;
+    };
+}
+
 interface ApiErrorResponse {
     success: false;
     message: string;
@@ -78,8 +86,50 @@ export async function loginUser(
     return response.data;
 }
 
-export function getRegisterErrorMessage(error: unknown): string {
-    if (typeof error === "object" && error !== null && "response" in error) {
+/**
+ * Verify the saved access token and retrieve the current user.
+ */
+export async function getCurrentUser(
+    token: string,
+): Promise<AuthenticatedUser> {
+    const response = await api.get<CurrentUserResponse>(
+        "/auth/me",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        },
+    );
+
+    return response.data.data.user;
+}
+
+export function isUnauthorizedError(error: unknown): boolean {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error
+    ) {
+        const response = (
+            error as {
+                response?: {
+                    status?: number;
+                };
+            }
+        ).response;
+
+        return response?.status === 401;
+    }
+
+    return false;
+}
+
+export function getAuthErrorMessage(error: unknown): string {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error
+    ) {
         const response = (
             error as {
                 response?: {
@@ -102,5 +152,5 @@ export function getRegisterErrorMessage(error: unknown): string {
         return "Request timed out. Please try again.";
     }
 
-    return "Unable to create your account. Please check your connection and try again.";
+    return "Something went wrong. Please check your connection and try again.";
 }

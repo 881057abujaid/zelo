@@ -17,7 +17,7 @@ import { styles } from "./LoginScreen.styles";
 
 import { loginSchema } from "./validations/login.schema";
 import {
-    getRegisterErrorMessage,
+    getAuthErrorMessage,
     loginUser,
 } from "./auth.service";
 import { useAuthStore } from "./auth.store";
@@ -95,7 +95,7 @@ export default function LoginScreen() {
 
             // Navigation agle step mein implement karenge.
         } catch (error: unknown) {
-            setApiError(getRegisterErrorMessage(error));
+            setApiError(getAuthErrorMessage(error));
         } finally {
             setIsSubmitting(false);
         }

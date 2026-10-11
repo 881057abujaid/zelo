@@ -54,13 +54,9 @@ export default function HomeScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Open profile"
                         style={styles.avatar}
-                        onPress={() => {
-                            // Profile screen will be connected later
-                        }}
+                        onPress={() => router.push("/profile")}
                     >
-                        <Text style={styles.avatarText}>
-                            👨‍💻
-                        </Text>
+                        <Text style={styles.avatarText}>👨‍💻</Text>
                     </Pressable>
                 </View>
 
