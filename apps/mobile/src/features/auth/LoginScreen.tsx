@@ -14,11 +14,84 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors } from "@/constants/colors";
 import { styles } from "./LoginScreen.styles";
+import { loginSchema } from "./validations/login.schema";
+import {
+    getRegisterErrorMessage,
+    loginUser,
+} from "./auth.service";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [errors, setErrors] = useState<{
+        email?: string;
+        password?: string;
+    }>({});
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [apiError, setApiError] = useState("");
+
+    const validateForm = () => {
+        const result = loginSchema.safeParse({
+            email,
+            password,
+        });
+
+        if (!result.success) {
+            const fieldErrors: typeof errors = {};
+
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0];
+
+                if (
+                    typeof field === "string" &&
+                    !fieldErrors[field as keyof typeof fieldErrors]
+                ) {
+                    fieldErrors[field as keyof typeof fieldErrors] =
+                        issue.message;
+                }
+            });
+
+            setErrors(fieldErrors);
+            return false;
+        }
+
+        setErrors({});
+        return true;
+    };
+
+    const handleLogin = async () => {
+        if (isSubmitting) {
+            return;
+        }
+
+        setApiError("");
+
+        const isValid = validateForm();
+
+        if (!isValid) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await loginUser({
+                email: email.trim(),
+                password,
+            });
+
+            console.log("Login successful:", response.data.user);
+
+            // Secure token storage aur navigation
+            // agle step mein implement karenge.
+        } catch (error: unknown) {
+            setApiError(getRegisterErrorMessage(error));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -77,6 +150,12 @@ export default function LoginScreen() {
                                 textContentType="emailAddress"
                                 style={styles.input}
                             />
+
+                            {errors.email ? (
+                                <Text style={styles.errorText}>
+                                    {errors.email}
+                                </Text>
+                            ) : null}
                         </View>
 
                         <View style={styles.fieldGroup}>
@@ -107,6 +186,12 @@ export default function LoginScreen() {
                                     </Text>
                                 </Pressable>
                             </View>
+
+                            {errors.password ? (
+                                <Text style={styles.errorText}>
+                                    {errors.password}
+                                </Text>
+                            ) : null}
                         </View>
 
                         <Pressable
@@ -120,17 +205,26 @@ export default function LoginScreen() {
                             </Text>
                         </Pressable>
 
+                        {apiError ? (
+                            <Text
+                                style={styles.errorText}
+                                accessibilityRole="alert"
+                            >
+                                {apiError}
+                            </Text>
+                        ) : null}
+
                         <Pressable
-                            onPress={() => {
-                                // Login API integration comes next.
-                            }}
+                            onPress={handleLogin}
+                            disabled={isSubmitting}
                             style={({ pressed }) => [
                                 styles.primaryButton,
-                                pressed && styles.primaryButtonPressed,
+                                pressed && !isSubmitting && styles.primaryButtonPressed,
+                                isSubmitting && { opacity: 0.7 },
                             ]}
                         >
                             <Text style={styles.primaryButtonText}>
-                                Log In to ZELO →
+                                {isSubmitting ? "Logging in..." : "Log In to ZELO →"}
                             </Text>
                         </Pressable>
 

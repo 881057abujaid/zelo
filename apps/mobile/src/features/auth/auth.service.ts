@@ -7,6 +7,11 @@ export interface RegisterPayload {
     password: string;
 }
 
+export interface LoginPayload {
+    email: string;
+    password: string;
+}
+
 export interface RegisteredUser {
     id: string;
     username: string;
@@ -16,11 +21,29 @@ export interface RegisteredUser {
     createdAt: string;
 }
 
+export interface AuthenticatedUser {
+    id: string;
+    username: string;
+    email: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    totalXp: number;
+}
+
 interface RegisterResponse {
     success: true;
     message: string;
     data: {
         user: RegisteredUser;
+    };
+}
+
+export interface LoginResponse {
+    success: true;
+    message: string;
+    data: {
+        accessToken: string;
+        user: AuthenticatedUser;
     };
 }
 
@@ -38,6 +61,17 @@ export async function registerUser(
 ): Promise<RegisterResponse> {
     const response = await api.post<RegisterResponse>(
         "/auth/register",
+        payload,
+    );
+
+    return response.data;
+}
+
+export async function loginUser(
+    payload: LoginPayload,
+): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>(
+        "/auth/login",
         payload,
     );
 

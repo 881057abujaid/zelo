@@ -184,4 +184,11 @@ export const styles = StyleSheet.create({
         fontWeight: "800",
         letterSpacing: 2,
     },
+
+    errorText: {
+        color: "#EF4444",
+        fontSize: 12,
+        lineHeight: 17,
+        marginTop: 4,
+    },
 });

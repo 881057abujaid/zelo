@@ -1,7 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
 import {
-    Alert,
     Image,
     KeyboardAvoidingView,
     Platform,
