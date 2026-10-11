@@ -114,3 +114,21 @@ export async function loginUser(input: LoginInput) {
         },
     };
 }
+
+export async function getCurrentUser(userId: string) {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            displayName: true,
+            avatarUrl: true,
+            totalXp: true,
+        },
+    });
+
+    return user;
+}

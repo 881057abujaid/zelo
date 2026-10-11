@@ -31,7 +31,8 @@
           "image": "./assets/images/zelo-splash.png",
           "imageWidth": 180
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

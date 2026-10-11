@@ -14,11 +14,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors } from "@/constants/colors";
 import { styles } from "./LoginScreen.styles";
+
 import { loginSchema } from "./validations/login.schema";
 import {
     getRegisterErrorMessage,
     loginUser,
 } from "./auth.service";
+import { useAuthStore } from "./auth.store";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -31,6 +33,8 @@ export default function LoginScreen() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [apiError, setApiError] = useState("");
+
+    const login = useAuthStore((state) => state.login);
 
     const validateForm = () => {
         const result = loginSchema.safeParse({
@@ -82,10 +86,14 @@ export default function LoginScreen() {
                 password,
             });
 
-            console.log("Login successful:", response.data.user);
+            await login(
+                response.data.accessToken,
+                response.data.user,
+            );
 
-            // Secure token storage aur navigation
-            // agle step mein implement karenge.
+            setPassword("");
+
+            // Navigation agle step mein implement karenge.
         } catch (error: unknown) {
             setApiError(getRegisterErrorMessage(error));
         } finally {

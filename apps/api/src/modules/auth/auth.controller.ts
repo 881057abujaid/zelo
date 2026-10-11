@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { registerSchema, loginSchema } from "./auth.validation.js";
-import { registerUser, loginUser } from "./auth.service.js";
+import { registerUser, loginUser, getCurrentUser } from "./auth.service.js";
+import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 export async function register(
     req: Request,
@@ -104,5 +105,45 @@ export async function login(
         }
 
         return next(error);
+    }
+}
+
+export async function getMe(
+    req: AuthenticatedRequest,
+    res: Response
+) {
+    try {
+        if (!req.userId) {
+            res.status(401).json({
+                success: false,
+                message: "Authentication required.",
+            });
+            return;
+        }
+
+        const user = await getCurrentUser(req.userId);
+
+        if (!user) {
+            res.status(401).json({
+                success: false,
+                message: "User account no longer exists.",
+            });
+            return;
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Current user retrieved successfully.",
+            data: {
+                user,
+            },
+        });
+    } catch (error) {
+        console.error("Get current user error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to retrieve current user.",
+        });
     }
 }
