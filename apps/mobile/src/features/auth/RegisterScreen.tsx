@@ -1,5 +1,7 @@
 import { useState } from "react";
+import axios from "axios";
 import {
+    Alert,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -14,6 +16,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { styles } from "./RegisterScreen.styles";
 import { registerSchema } from "./validations/register.schema";
+import {
+    getRegisterErrorMessage,
+    registerUser,
+} from "./auth.service";
 
 export default function RegisterScreen() {
     const [username, setUsername] = useState("");
@@ -30,6 +36,10 @@ export default function RegisterScreen() {
             string
         >>
     >({});
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [apiError, setApiError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
     const validateForm = () => {
         const result = registerSchema.safeParse({
@@ -61,6 +71,44 @@ export default function RegisterScreen() {
 
         setErrors({});
         return true;
+    };
+
+    const handleRegister = async () => {
+        if (isSubmitting) {
+            return;
+        }
+
+        setApiError("");
+        setSuccessMessage("");
+
+        const isValid = validateForm();
+
+        if (!isValid) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await registerUser({
+                username: username.trim(),
+                displayName: displayName.trim(),
+                email: email.trim(),
+                password,
+            });
+
+            setSuccessMessage(response.message);
+
+            // Password fields clear kar do.
+            setPassword("");
+            setConfirmPassword("");
+
+            console.log("Registered user:", response.data.user);
+        } catch (error: unknown) {
+            setApiError(getRegisterErrorMessage(error));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -267,25 +315,42 @@ export default function RegisterScreen() {
                             )}
                         </View>
 
+                        {apiError ? (
+                            <Text
+                                style={styles.errorText}
+                                accessibilityRole="alert"
+                            >
+                                {apiError}
+                            </Text>
+                        ) : null}
+
+                        {successMessage ? (
+                            <Text
+                                style={{
+                                    color: "#16A34A",
+                                    fontSize: 14,
+                                    marginBottom: 12,
+                                }}
+                                accessibilityRole="alert"
+                            >
+                                {successMessage}
+                            </Text>
+                        ) : null}
+
                         {/* Create account */}
                         <Pressable
-                            onPress={() => {
-                                const isValid = validateForm();
-
-                                if (!isValid) {
-                                    return;
-                                }
-
-                                // API integration baad mein add karenge.
-                                console.log("Registration form is valid.");
-                            }}
+                            onPress={handleRegister}
+                            disabled={isSubmitting}
                             style={({ pressed }) => [
                                 styles.primaryButton,
-                                pressed && styles.primaryButtonPressed,
+                                pressed && !isSubmitting && styles.primaryButtonPressed,
+                                isSubmitting && { opacity: 0.7 },
                             ]}
                         >
                             <Text style={styles.primaryButtonText}>
-                                Create My Account →
+                                {isSubmitting
+                                    ? "Creating account..."
+                                    : "Create My Account →"}
                             </Text>
                         </Pressable>
 
