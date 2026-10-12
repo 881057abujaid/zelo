@@ -9,40 +9,90 @@ import { executeCode } from "./engine/challengeRunner";
 import { MockExecutor } from "./engine/executor/mockExecutor";
 import { submitChallengeAndUpdateProgress } from "./engine/challengeService";
 import { useProgressStore } from "@/features/progress/progressStore";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
+import { generateRoadmap } from "@/features/roadmap/roadmap.engine";
 
 const executor = new MockExecutor();
 
 export default function ChallengeScreen() {
     const progress = useProgressStore();
 
+    const selectedGoal = useOnboardingStore((state) => state.selectedGoal);
+    const experienceLevel = useOnboardingStore((state) => state.experienceLevel);
+    const assessmentResults = useOnboardingStore((state) => state.assessmentResults);
+
+    const roadmap = generateRoadmap(
+        selectedGoal ?? "fullstack",
+        experienceLevel ?? "complete-beginner",
+        assessmentResults,
+        progress.completedMissionIds
+    );
+
+    const currentMission = roadmap.missions.find((mission) => mission.status === "current");
+    const missionChallenges = challengeData.filter((item) => item.missionId === currentMission?.id);
+
     const getNextChallengeIndex = () => {
-        const savedIndex = challengeData.findIndex(
+        if (missionChallenges.length === 0) {
+            return -1;
+        }
+
+        const savedIndex = missionChallenges.findIndex(
             (item) => item.id === progress.currentChallengeId
         );
 
         if (
             savedIndex !== -1 &&
             !progress.completedChallenges.includes(
-                challengeData[savedIndex].id
+                missionChallenges[savedIndex].id
             )
         ) {
             return savedIndex;
         }
 
-        const nextIncompleteIndex = challengeData.findIndex(
-            (item) =>
-                !progress.completedChallenges.includes(item.id)
+        const nextIncompleteIndex = missionChallenges.findIndex(
+            (item) => !progress.completedChallenges.includes(item.id)
         );
 
         return nextIncompleteIndex === -1
-            ? challengeData.length - 1
+            ? missionChallenges.length - 1
             : nextIncompleteIndex;
     };
 
     const [currentChallengeIndex, setCurrentChallengeIndex] =
         useState(getNextChallengeIndex);
 
-    const challenge = challengeData[currentChallengeIndex];
+    const challenge =
+        currentChallengeIndex >= 0
+            ? missionChallenges[currentChallengeIndex]
+            : undefined;
+
+    if (!challenge) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+                    <Text style={{ fontSize: 22, fontWeight: "bold", textAlign: "center" }}>
+                        No Challenges Available
+                    </Text>
+
+                    <Text style={{ marginTop: 12, textAlign: "center" }}>
+                        {currentMission
+                            ? `Challenges for "${currentMission.title}" are not available yet.`
+                            : "No active mission found. Please check your roadmap."}
+                    </Text>
+
+                    <Pressable
+                        onPress={() => router.replace("/onboarding/roadmap")}
+                        style={{ marginTop: 24, padding: 14, backgroundColor: "#6366F1", borderRadius: 12 }}
+                    >
+                        <Text style={{ color: "#FFFFFF", fontWeight: "bold" }}>
+                            Back to Roadmap
+                        </Text>
+                    </Pressable>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     const progressPercentage = (challenge.number / challenge.total) * 100;
 
     const [code, setCode] = useState(challenge.starterCode);
@@ -99,9 +149,9 @@ export default function ChallengeScreen() {
         setIsCompleted(true);
 
         const isLastChallenge =
-            currentChallengeIndex === challengeData.length - 1;
+            currentChallengeIndex === missionChallenges.length - 1;
 
-        const allChallengesCompleted = challengeData.every((item) =>
+        const allChallengesCompleted = missionChallenges.every((item) =>
             updatedProgress.completedChallenges.includes(item.id)
         );
 
@@ -372,19 +422,18 @@ export default function ChallengeScreen() {
                 )}
 
                 {/* Next Challenge Navigation Button */}
-                {isCompleted && currentChallengeIndex < challengeData.length - 1 && (
+                {isCompleted && currentChallengeIndex < missionChallenges.length - 1 && (
                     <Pressable
                         style={styles.nextButton}
                         onPress={() => {
                             const nextChallengeIndex = currentChallengeIndex + 1;
-                            const nextChallenge = challengeData[nextChallengeIndex];
+                            const nextChallenge = missionChallenges[nextChallengeIndex];
 
                             if (!nextChallenge) {
                                 return;
                             }
 
                             setCurrentChallengeIndex(nextChallengeIndex);
-
                             progress.setCurrentChallenge(nextChallenge.id);
                         }}
                     >

@@ -41,11 +41,9 @@ export async function submitChallengeAndUpdateProgress(
 
     const updatedProgress = applyChallengeResult(progress, result);
 
-    const isVariablesChallenge = challenge.id.startsWith("js-variables-");
-
     const finalProgress =
-        isVariablesChallenge && result.executed && result.isCorrect
-            ? updateMissionCompletion(updatedProgress, "programming-variables")
+        result.executed && result.isCorrect
+            ? updateMissionCompletion(updatedProgress, challenge.missionId)
             : updatedProgress;
 
     return {

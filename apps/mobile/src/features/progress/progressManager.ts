@@ -52,6 +52,11 @@ const MISSION_CHALLENGE_REQUIREMENTS: Record<string, string[]> = {
         "js-variables-04",
         "js-variables-05",
     ],
+    "programming-conditions": [
+        "js-conditions-01",
+        "js-conditions-02",
+        "js-conditions-03",
+    ],
 };
 
 export function updateMissionCompletion(

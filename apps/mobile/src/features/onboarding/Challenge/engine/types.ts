@@ -54,6 +54,7 @@ export type ExpectedValueValidation = {
 
 export type Challenge = {
     id: string;
+    missionId: string;
 
     number: number;
     total: number;

@@ -14,6 +14,7 @@ const createExecutor = (
 
 const variableChallenge: Challenge = {
     id: "test-variable",
+    missionId: "programming-variables",
     number: 1,
     total: 5,
     title: "Create a variable",

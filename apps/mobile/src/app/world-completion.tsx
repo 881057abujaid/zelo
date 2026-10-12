@@ -24,7 +24,7 @@ export default function WorldCompletionRoute() {
             completedChallenges={completedCount}
             xpEarned={totalXp}
             onContinue={() => {
-                router.replace("/");
+                router.replace("/onboarding/roadmap");
             }}
         />
     );
