@@ -1,16 +1,21 @@
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 
 import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
+
 import { styles } from "./AnalysisScreen.styles";
 
 export default function AnalysisScreen() {
-    const { score } = useLocalSearchParams<{ score?: string }>();
+    const assessmentResults = useOnboardingStore((state) => state.assessmentResults);
 
-    const finalScore = Number(score ?? 0);
-    const percentage = Math.round((finalScore / 5) * 100);
+    const finalScore = assessmentResults?.correctAnswers ?? 0;
+    const totalQuestions = assessmentResults?.totalQuestions ?? 0;
+    const percentage = assessmentResults?.percentage ?? 0;
+    const javascriptScore = assessmentResults?.skillScores.javascript;
 
+    // Determine the user's preliminary assessment level.
     const getLevel = () => {
         if (percentage >= 80) {
             return "Intermediate";
@@ -25,6 +30,26 @@ export default function AnalysisScreen() {
 
     const level = getLevel();
 
+    // Generate feedback from the JavaScript assessment score.
+    const getSkillFeedback = () => {
+        if (
+            !javascriptScore ||
+            javascriptScore.totalQuestions === 0
+        ) {
+            return "Complete more JavaScript questions to evaluate your skill.";
+        }
+
+        if (javascriptScore.percentage >= 80) {
+            return "Great work! You have a strong foundation in JavaScript. Let's apply your knowledge through practical coding missions.";
+        }
+
+        if (javascriptScore.percentage >= 60) {
+            return "Good progress! You understand some JavaScript fundamentals. Keep practising to strengthen your skills.";
+        }
+
+        return "Let's strengthen your JavaScript fundamentals step by step through interactive lessons and practice missions.";
+    };
+
     const handleContinue = () => {
         router.push("/onboarding/roadmap");
     };
@@ -32,12 +57,12 @@ export default function AnalysisScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
-
                 <OnboardingProgress
                     currentStep={4}
                     totalSteps={4}
                 />
 
+                {/* Header */}
                 <View style={styles.header}>
                     <Text style={styles.celebration}>
                         🎉
@@ -54,13 +79,14 @@ export default function AnalysisScreen() {
                     </Text>
                 </View>
 
+                {/* Assessment Score */}
                 <View style={styles.scoreCard}>
                     <Text style={styles.score}>
                         {finalScore}
                     </Text>
 
                     <Text style={styles.scoreTotal}>
-                        / 5
+                        / {totalQuestions}
                     </Text>
 
                     <Text style={styles.scoreLabel}>
@@ -68,6 +94,7 @@ export default function AnalysisScreen() {
                     </Text>
                 </View>
 
+                {/* Overall Assessment Level */}
                 <View style={styles.levelSection}>
                     <Text style={styles.levelLabel}>
                         Your current level
@@ -93,21 +120,49 @@ export default function AnalysisScreen() {
                     </Text>
                 </View>
 
+                {/* JavaScript Skill Assessment */}
+                {javascriptScore && (
+                    <View style={styles.levelSection}>
+                        <Text style={styles.levelLabel}>
+                            JavaScript Skills
+                        </Text>
+
+                        <Text style={styles.level}>
+                            {javascriptScore.percentage}%
+                        </Text>
+
+                        <View style={styles.progressTrack}>
+                            <View
+                                style={[
+                                    styles.progressFill,
+                                    {
+                                        width: `${javascriptScore.percentage}%`,
+                                    },
+                                ]}
+                            />
+                        </View>
+
+                        <Text style={styles.percentage}>
+                            {javascriptScore.correctAnswers}
+                            {" / "}
+                            {javascriptScore.totalQuestions}
+                            {" correct answers"}
+                        </Text>
+                    </View>
+                )}
+
+                {/* Personalized Recommendation */}
                 <View style={styles.recommendation}>
                     <Text style={styles.recommendationTitle}>
                         Nova's Recommendation 💚
                     </Text>
 
                     <Text style={styles.recommendationText}>
-                        {level === "Intermediate"
-                            ? "You have a solid foundation. Let's strengthen your skills and move toward building real-world projects."
-                            : level === "Beginner+"
-                                ? "You already understand the basics. Let's strengthen your JavaScript fundamentals and start building real projects."
-                                : "We'll build your coding foundation step by step and turn learning into real progress."
-                        }
+                        {getSkillFeedback()}
                     </Text>
                 </View>
 
+                {/* Continue */}
                 <View style={styles.actions}>
                     <Pressable
                         onPress={handleContinue}
@@ -122,7 +177,6 @@ export default function AnalysisScreen() {
                         </Text>
                     </Pressable>
                 </View>
-
             </View>
         </SafeAreaView>
     );

@@ -1,64 +1,55 @@
-import { useState } from 'react';
-import {
-    Pressable,
-    ScrollView,
-    Text,
-    View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
-import OnboardingProgress from '../../../components/onboarding/OnboardingProgress';
-import { assessmentQuestions } from './assessmentQuestions';
-import { styles } from './AssessmentScreen.styles';
+import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
+import { assessmentQuestions } from "./assessmentQuestions";
+import { calculateAssessmentResults } from "./assessmentScoring";
+import { styles } from "./AssessmentScreen.styles";
+
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 
 export default function AssessmentScreen() {
-    const [currentQuestionIndex, setCurrentQuestionIndex] =
-        useState(0);
+    const currentQuestionIndex = useOnboardingStore((state) => state.currentQuestionIndex);
+    const answers = useOnboardingStore((state) => state.answers);
+    const setAnswer = useOnboardingStore((state) => state.setAnswer);
+    const setCurrentQuestionIndex = useOnboardingStore((state) => state.setCurrentQuestionIndex);
+    const setAssessmentResults = useOnboardingStore((state) => state.setAssessmentResults);
 
-    const [selectedAnswer, setSelectedAnswer] =
-        useState<string | null>(null);
-
-    const [score, setScore] = useState(0);
-
-    const currentQuestion =
-        assessmentQuestions[currentQuestionIndex];
-
-    const isLastQuestion =
-        currentQuestionIndex === assessmentQuestions.length - 1;
+    const currentQuestion = assessmentQuestions[currentQuestionIndex];
+    const selectedAnswer = answers[currentQuestion.id] ?? null;
+    const isLastQuestion = currentQuestionIndex === assessmentQuestions.length - 1;
 
     const handleContinue = () => {
         if (!selectedAnswer) {
             return;
         }
 
-        const isCorrect =
-            selectedAnswer === currentQuestion.correctAnswer;
+        const updatedAnswers = {
+            ...answers,
+            [currentQuestion.id]: selectedAnswer,
+        };
 
-        const newScore = isCorrect ? score + 1 : score;
+        setAnswer(currentQuestion.id, selectedAnswer);
 
         if (isLastQuestion) {
-            router.push({
-                pathname: "/onboarding/analysis",
-                params: {
-                    score: newScore.toString(),
-                }
-            });
+            const results = calculateAssessmentResults(
+                assessmentQuestions,
+                updatedAnswers,
+            );
 
+            setAssessmentResults(results);
+
+            router.push("/onboarding/analysis");
             return;
         }
 
-        setScore(newScore);
-        setCurrentQuestionIndex(
-            currentQuestionIndex + 1
-        );
-        setSelectedAnswer(null);
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
     };
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
-
                 {/* Onboarding Progress */}
                 <OnboardingProgress
                     currentStep={4}
@@ -73,13 +64,13 @@ export default function AssessmentScreen() {
                     <View style={styles.header}>
                         <Text style={styles.title}>
                             Let's test your
-                            {'\n'}
+                            {"\n"}
                             coding skills 🧠
                         </Text>
 
                         <Text style={styles.subtitle}>
                             Don't worry — this isn't
-                            {'\n'}
+                            {"\n"}
                             an exam.
                         </Text>
                     </View>
@@ -87,24 +78,21 @@ export default function AssessmentScreen() {
                     {/* Question Progress */}
                     <View style={styles.questionHeader}>
                         <Text style={styles.questionNumber}>
-                            Question {currentQuestionIndex + 1} of{' '}
+                            Question {currentQuestionIndex + 1} of{" "}
                             {assessmentQuestions.length}
                         </Text>
 
                         <View style={styles.questionProgress}>
-                            {assessmentQuestions.map(
-                                (_, index) => (
-                                    <View
-                                        key={index}
-                                        style={
-                                            index ===
-                                                currentQuestionIndex
-                                                ? styles.questionProgressActive
-                                                : styles.questionProgressDot
-                                        }
-                                    />
-                                )
-                            )}
+                            {assessmentQuestions.map((_, index) => (
+                                <View
+                                    key={index}
+                                    style={
+                                        index === currentQuestionIndex
+                                            ? styles.questionProgressActive
+                                            : styles.questionProgressDot
+                                    }
+                                />
+                            ))}
                         </View>
                     </View>
 
@@ -125,68 +113,63 @@ export default function AssessmentScreen() {
 
                     {/* Answers */}
                     <View style={styles.answers}>
-                        {currentQuestion.options.map(
-                            (option) => {
-                                const isSelected =
-                                    selectedAnswer === option.id;
+                        {currentQuestion.options.map((option) => {
+                            const isSelected =
+                                selectedAnswer === option.id;
 
-                                return (
-                                    <Pressable
-                                        key={option.id}
-                                        onPress={() =>
-                                            setSelectedAnswer(
-                                                option.id
-                                            )
-                                        }
+                            return (
+                                <Pressable
+                                    key={option.id}
+                                    onPress={() =>
+                                        setAnswer(
+                                            currentQuestion.id,
+                                            option.id,
+                                        )
+                                    }
+                                    style={[
+                                        styles.answer,
+                                        isSelected &&
+                                        styles.answerSelected,
+                                    ]}
+                                >
+                                    <View
                                         style={[
-                                            styles.answer,
+                                            styles.answerLabel,
                                             isSelected &&
-                                            styles.answerSelected,
+                                            styles.answerLabelSelected,
                                         ]}
                                     >
-                                        <View
-                                            style={[
-                                                styles.answerLabel,
-                                                isSelected &&
-                                                styles.answerLabelSelected,
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.answerLabelText,
-                                                    isSelected &&
-                                                    styles.answerLabelTextSelected,
-                                                ]}
-                                            >
-                                                {option.label}
-                                            </Text>
-                                        </View>
-
                                         <Text
-                                            style={styles.answerText}
-                                        >
-                                            {option.value}
-                                        </Text>
-
-                                        <View
                                             style={[
-                                                styles.radio,
+                                                styles.answerLabelText,
                                                 isSelected &&
-                                                styles.radioSelected,
+                                                styles.answerLabelTextSelected,
                                             ]}
                                         >
-                                            {isSelected && (
-                                                <View
-                                                    style={
-                                                        styles.radioInner
-                                                    }
-                                                />
-                                            )}
-                                        </View>
-                                    </Pressable>
-                                );
-                            }
-                        )}
+                                            {option.label}
+                                        </Text>
+                                    </View>
+
+                                    <Text style={styles.answerText}>
+                                        {option.value}
+                                    </Text>
+
+                                    <View
+                                        style={[
+                                            styles.radio,
+                                            isSelected &&
+                                            styles.radioSelected,
+                                        ]}
+                                    >
+                                        {isSelected && (
+                                            <View
+                                                style={styles.radioInner}
+                                            />
+                                        )}
+                                    </View>
+                                </Pressable>
+                            );
+                        })}
                     </View>
 
                     {/* Continue */}
@@ -201,18 +184,13 @@ export default function AssessmentScreen() {
                             ]}
                         >
                             <Text style={styles.primaryButtonText}>
-                                {isLastQuestion
-                                    ? 'Finish'
-                                    : 'Continue'}
+                                {isLastQuestion ? "Finish" : "Continue"}
                             </Text>
 
-                            <Text style={styles.arrow}>
-                                →
-                            </Text>
+                            <Text style={styles.arrow}>→</Text>
                         </Pressable>
                     </View>
                 </ScrollView>
-
             </View>
         </SafeAreaView>
     );

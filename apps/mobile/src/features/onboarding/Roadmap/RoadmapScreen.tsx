@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import { styles } from "./RoadmapScreen.styles";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 
 const roadmapItems = [
     {
@@ -57,6 +58,28 @@ const roadmapItems = [
 ];
 
 export default function RoadmapScreen() {
+    const assessmentResults = useOnboardingStore((state) => state.assessmentResults);
+    const selectedGoal = useOnboardingStore((state) => state.selectedGoal);
+    const experienceLevel = useOnboardingStore((state) => state.experienceLevel);
+
+    const finalScore = assessmentResults?.correctAnswers ?? 0;
+    const totalQuestions = assessmentResults?.totalQuestions ?? 0;
+    const percentage = assessmentResults?.percentage ?? 0;
+
+    const getLevel = () => {
+        if (percentage >= 80) {
+            return "Intermediate";
+        }
+
+        if (percentage >= 60) {
+            return "Beginner+";
+        }
+
+        return "Beginner";
+    };
+
+    const level = getLevel();
+
     const handleStart = () => {
         router.push("/onboarding/mission");
     };
@@ -96,13 +119,13 @@ export default function RoadmapScreen() {
                         </Text>
 
                         <Text style={styles.level}>
-                            Beginner+
+                            {level}
                         </Text>
                     </View>
 
                     <View style={styles.scoreBadge}>
                         <Text style={styles.score}>
-                            4/5
+                            {finalScore}/{totalQuestions}
                         </Text>
 
                         <Text style={styles.scoreLabel}>
@@ -197,10 +220,12 @@ export default function RoadmapScreen() {
                     </Text>
 
                     <Text style={styles.novaText}>
-                        You already have a good foundation. We'll
-                        strengthen your JavaScript skills first,
-                        then gradually move toward building
-                        real-world applications.
+                        {level === "Intermediate"
+                            ? "You have a solid foundation. Let's strengthen your skills and progress toward building real-world MERN applications."
+                            : level === "Beginner+"
+                                ? "You already understand some JavaScript fundamentals. Let's strengthen your core skills and gradually move toward full-stack development."
+                                : "We'll build your programming foundation step by step, starting with JavaScript and progressing toward complete MERN Stack applications."
+                        }
                     </Text>
                 </View>
 

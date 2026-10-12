@@ -1,47 +1,47 @@
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useState } from 'react';
 
 import { styles } from './GoalSelectionScreen.styles';
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
+import type { OnboardingGoal } from "@/features/onboarding/onboarding.store";
 import OnboardingProgress from '@/components/onboarding/OnboardingProgress';
 
-type Goal = {
-    id: string;
+const goals: {
+    id: OnboardingGoal;
     icon: string;
     title: string;
     description: string;
-};
-
-const goals: Goal[] = [
-    {
-        id: 'web',
-        icon: '🌐',
-        title: 'Websites',
-        description: 'Build modern web apps',
-    },
-    {
-        id: 'mobile',
-        icon: '📱',
-        title: 'Mobile Apps',
-        description: 'Create apps for users',
-    },
-    {
-        id: 'backend',
-        icon: '⚙️',
-        title: 'Backend & APIs',
-        description: 'Build powerful APIs',
-    },
-    {
-        id: 'fullstack',
-        icon: '🚀',
-        title: 'Full-Stack',
-        description: 'Build complete applications',
-    },
-];
+}[] = [
+        {
+            id: "web",
+            icon: "🌐",
+            title: "Websites",
+            description: "Build modern web apps",
+        },
+        {
+            id: "mobile",
+            icon: "📱",
+            title: "Mobile Apps",
+            description: "Create apps for users",
+        },
+        {
+            id: "backend",
+            icon: "⚙️",
+            title: "Backend & APIs",
+            description: "Build powerful APIs",
+        },
+        {
+            id: "fullstack",
+            icon: "🚀",
+            title: "Full-Stack",
+            description: "Build complete applications",
+        },
+    ];
 
 export default function GoalSelectionScreen() {
-    const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+    const selectedGoal = useOnboardingStore((state) => state.selectedGoal);
+    const setSelectedGoal = useOnboardingStore((state) => state.setSelectedGoal);
 
     const handleContinue = () => {
         if (!selectedGoal) {

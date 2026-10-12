@@ -1,47 +1,47 @@
-import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import OnboardingProgress from "@/components/onboarding/OnboardingProgress";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
+import type { ExperienceLevel } from "@/features/onboarding/onboarding.store";
 import { styles } from "./ExperienceLevelScreen.styles";
 
-type ExperienceLevel = {
-    id: string;
+const experienceLevels: {
+    id: ExperienceLevel;
     icon: string;
     title: string;
     description: string;
-};
-
-const experienceLevels: ExperienceLevel[] = [
-    {
-        id: "complete-beginner",
-        icon: "🌱",
-        title: "Complete Beginner",
-        description: "I've never coded before",
-    },
-    {
-        id: "beginner",
-        icon: "💡",
-        title: "Beginner",
-        description: "I know the basics",
-    },
-    {
-        id: "intermediate",
-        icon: "🛠️",
-        title: "Intermediate",
-        description: "I've built some projects",
-    },
-    {
-        id: "advanced",
-        icon: "🚀",
-        title: "Advanced",
-        description: "I'm comfortable in coding",
-    },
-];
+}[] = [
+        {
+            id: "complete-beginner",
+            icon: "🌱",
+            title: "Complete Beginner",
+            description: "I've never coded before",
+        },
+        {
+            id: "beginner",
+            icon: "💡",
+            title: "Beginner",
+            description: "I know the basics",
+        },
+        {
+            id: "intermediate",
+            icon: "🛠️",
+            title: "Intermediate",
+            description: "I've built some projects",
+        },
+        {
+            id: "advanced",
+            icon: "🚀",
+            title: "Advanced",
+            description: "I'm comfortable in coding",
+        },
+    ];
 
 export default function ExperienceLevelScreen() {
-    const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+    const selectedLevel = useOnboardingStore((state) => state.experienceLevel);
+    const setSelectedLevel = useOnboardingStore((state) => state.setExperienceLevel);
 
     const handleContinue = () => {
         if (!selectedLevel) {
