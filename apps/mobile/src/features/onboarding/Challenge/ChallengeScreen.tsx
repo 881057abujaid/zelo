@@ -66,11 +66,52 @@ export default function ChallengeScreen() {
             ? missionChallenges[currentChallengeIndex]
             : undefined;
 
+    const progressPercentage = challenge
+        ? (challenge.number / challenge.total) * 100
+        : 0;
+
+    const [code, setCode] = useState("");
+    const [isOutofLives, setISOutofLives] = useState(false);
+    const [output, setOutput] = useState<string | null>(null);
+    const [isCompleted, setIsCompleted] = useState(false);
+    const [validation, setValidation] = useState<{
+        isCorrect: boolean;
+        message: string;
+    } | null>(null);
+
+    useEffect(() => {
+        if (!challenge) {
+            setCode("");
+            setOutput(null);
+            setValidation(null);
+            setIsCompleted(false);
+            return;
+        }
+
+        setCode(challenge.starterCode);
+        setOutput(null);
+        setValidation(null);
+        setIsCompleted(false);
+    }, [challenge?.id]);
+
     if (!challenge) {
         return (
             <SafeAreaView style={styles.container}>
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-                    <Text style={{ fontSize: 22, fontWeight: "bold", textAlign: "center" }}>
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        padding: 24,
+                    }}
+                >
+                    <Text
+                        style={{
+                            fontSize: 22,
+                            fontWeight: "bold",
+                            textAlign: "center",
+                        }}
+                    >
                         No Challenges Available
                     </Text>
 
@@ -82,7 +123,12 @@ export default function ChallengeScreen() {
 
                     <Pressable
                         onPress={() => router.replace("/onboarding/roadmap")}
-                        style={{ marginTop: 24, padding: 14, backgroundColor: "#6366F1", borderRadius: 12 }}
+                        style={{
+                            marginTop: 24,
+                            padding: 14,
+                            backgroundColor: "#6366F1",
+                            borderRadius: 12,
+                        }}
                     >
                         <Text style={{ color: "#FFFFFF", fontWeight: "bold" }}>
                             Back to Roadmap
@@ -92,24 +138,6 @@ export default function ChallengeScreen() {
             </SafeAreaView>
         );
     }
-
-    const progressPercentage = (challenge.number / challenge.total) * 100;
-
-    const [code, setCode] = useState(challenge.starterCode);
-    const [isOutofLives, setISOutofLives] = useState(false);
-    const [output, setOutput] = useState<string | null>(null);
-    const [isCompleted, setIsCompleted] = useState(false);
-    const [validation, setValidation] = useState<{
-        isCorrect: boolean;
-        message: string;
-    } | null>(null);
-
-    useEffect(() => {
-        setCode(challenge.starterCode);
-        setOutput(null);
-        setValidation(null);
-        setIsCompleted(false);
-    }, [currentChallengeIndex]);
 
     const handleRunCode = async () => {
         setOutput(null);

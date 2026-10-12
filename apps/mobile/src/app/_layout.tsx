@@ -53,8 +53,7 @@ export default function RootLayout() {
 
     const isProtectedRoute =
       currentRoute === "home" ||
-      currentRoute === "profile" ||
-      currentRoute === "world-completion";
+      currentRoute === "profile";
 
     const isAuthRoute =
       currentRoute === undefined ||
