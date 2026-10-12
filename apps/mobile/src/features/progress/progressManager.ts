@@ -43,3 +43,45 @@ export function setCurrentChallenge(
         currentChallengeId: challengeId,
     };
 }
+
+const MISSION_CHALLENGE_REQUIREMENTS: Record<string, string[]> = {
+    "programming-variables": [
+        "js-variables-01",
+        "js-variables-02",
+        "js-variables-03",
+        "js-variables-04",
+        "js-variables-05",
+    ],
+};
+
+export function updateMissionCompletion(
+    progress: PlayerProgress,
+    missionId: string
+): PlayerProgress {
+    const requiredChallenges =
+        MISSION_CHALLENGE_REQUIREMENTS[missionId];
+
+    if (!requiredChallenges) {
+        return progress;
+    }
+
+    const allChallengesCompleted = requiredChallenges.every(
+        (challengeId) =>
+            progress.completedChallenges.includes(challengeId)
+    );
+
+    if (
+        !allChallengesCompleted ||
+        progress.completedMissionIds.includes(missionId)
+    ) {
+        return progress;
+    }
+
+    return {
+        ...progress,
+        completedMissionIds: [
+            ...progress.completedMissionIds,
+            missionId,
+        ],
+    };
+}

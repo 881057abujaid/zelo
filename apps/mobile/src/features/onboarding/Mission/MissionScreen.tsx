@@ -3,9 +3,30 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import { styles } from "./MissionScreen.styles";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
+import { useProgressStore } from "@/features/progress/progressStore";
+import { generateRoadmap } from "@/features/roadmap/roadmap.engine";
 
 export default function MissionScreen() {
+    const selectedGoal = useOnboardingStore((state) => state.selectedGoal);
+    const experienceLevel = useOnboardingStore((state) => state.experienceLevel);
+    const assessmentResults = useOnboardingStore((state) => state.assessmentResults);
+    const completedMissionIds = useProgressStore((state) => state.completedMissionIds);
+
+    const roadmap = generateRoadmap(
+        selectedGoal ?? "fullstack",
+        experienceLevel ?? "complete-beginner",
+        assessmentResults,
+        completedMissionIds
+    );
+
+    const currentMission = roadmap.missions.find((mission) => mission.status === "current");
+
     const handleStartMission = () => {
+        if (!currentMission) {
+            return;
+        }
+
         router.push("/onboarding/challenge");
     };
 
@@ -18,13 +39,17 @@ export default function MissionScreen() {
                 {/* Mission Header */}
                 <View style={styles.header}>
                     <Text style={styles.missionLabel}>
-                        🎮 MISSION 01
+                        🎮 MISSION
                     </Text>
+
                     <Text style={styles.title}>
-                        JavaScript Foundations
+                        {currentMission?.title ?? "All Missions Completed!"}
                     </Text>
+
                     <Text style={styles.subtitle}>
-                        Core JavaScript
+                        {currentMission?.skillDomain
+                            ?.replace(/-/g, " ")
+                            .replace(/\b\w/g, (char) => char.toUpperCase()) ?? "Congratulations!"}
                     </Text>
                 </View>
 
@@ -32,7 +57,10 @@ export default function MissionScreen() {
                 <View style={styles.difficultyRow}>
                     <View style={styles.difficultyBadge}>
                         <Text style={styles.difficultyText}>
-                            ⭐ Beginner
+                            ⭐ {currentMission?.difficulty
+                                ? currentMission.difficulty.charAt(0).toUpperCase()
+                                + currentMission.difficulty.slice(1)
+                                : "Completed"}
                         </Text>
                     </View>
                 </View>
@@ -49,41 +77,42 @@ export default function MissionScreen() {
                         Your Mission
                     </Text>
                     <Text style={styles.cardDescription}>
-                        Learn how JavaScript variables work
-                        and create your first variable.
+                        {currentMission?.description
+                            ?? "You have completed all available missions. Great work!"}
                     </Text>
+
+                    {currentMission && (
+                        <Text>
+                            ⏱️ Estimated time: {currentMission.estimatedMinutes} minutes
+                        </Text>
+                    )}
                 </View>
 
-                {/* Objective */}
+                {/* Learning Objectives */}
                 <View style={styles.objectiveSection}>
                     <Text style={styles.sectionTitle}>
                         What you'll learn
                     </Text>
 
                     <View style={styles.objective}>
-                        <Text style={styles.check}>
-                            ✓
-                        </Text>
+                        <Text style={styles.check}>✓</Text>
                         <Text style={styles.objectiveText}>
-                            Understand JavaScript variables
+                            Understand {currentMission?.title ?? "your next mission"}
                         </Text>
                     </View>
 
                     <View style={styles.objective}>
-                        <Text style={styles.check}>
-                            ✓
-                        </Text>
+                        <Text style={styles.check}>✓</Text>
                         <Text style={styles.objectiveText}>
-                            Use let and const
+                            Build your knowledge of{" "}
+                            {currentMission?.skillDomain.replace(/-/g, " ") ?? "programming"}
                         </Text>
                     </View>
 
                     <View style={styles.objective}>
-                        <Text style={styles.check}>
-                            ✓
-                        </Text>
+                        <Text style={styles.check}>✓</Text>
                         <Text style={styles.objectiveText}>
-                            Write your first piece of JavaScript
+                            Complete the mission and earn XP
                         </Text>
                     </View>
                 </View>
@@ -137,13 +166,18 @@ export default function MissionScreen() {
                 {/* Start Mission */}
                 <Pressable
                     onPress={handleStartMission}
-                    style={styles.primaryButton}
+                    disabled={!currentMission}
+                    style={[
+                        styles.primaryButton,
+                        !currentMission && { opacity: 0.5 },
+                    ]}
                 >
                     <Text style={styles.primaryButtonText}>
-                        Start Mission
+                        {currentMission ? "Start Mission" : "All Missions Completed"}
                     </Text>
+
                     <Text style={styles.arrow}>
-                        →
+                        {currentMission ? "→" : "✓"}
                     </Text>
                 </Pressable>
             </ScrollView>

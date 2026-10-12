@@ -99,10 +99,18 @@ export default function ChallengeScreen() {
         setIsCompleted(true);
 
         const isLastChallenge =
-            currentChallengeIndex ===
-            challengeData.length - 1;
+            currentChallengeIndex === challengeData.length - 1;
 
-        if (isLastChallenge) {
+        const allChallengesCompleted = challengeData.every((item) =>
+            updatedProgress.completedChallenges.includes(item.id)
+        );
+
+        if (
+            isLastChallenge &&
+            result.executed &&
+            result.isCorrect &&
+            allChallengesCompleted
+        ) {
             router.replace({
                 pathname: "/world-completion",
                 params: {
