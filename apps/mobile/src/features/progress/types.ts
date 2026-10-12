@@ -7,6 +7,7 @@ export type PlayerProgress = {
 
     completedChallenges: string[];
 
-    currentStreak: number;
-}
+    completedMissionIds: string[];
 
+    currentStreak: number;
+};

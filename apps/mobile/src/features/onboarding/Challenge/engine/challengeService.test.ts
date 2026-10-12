@@ -12,6 +12,7 @@ const initialProgress: PlayerProgress = {
     lives: 3,
     currentChallengeId: "js-variables-01",
     completedChallenges: [],
+    completedMissionIds: [],
     currentStreak: 0,
 };
 

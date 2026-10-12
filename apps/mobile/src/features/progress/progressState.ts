@@ -11,5 +11,7 @@ export const initialProgress: PlayerProgress = {
 
     completedChallenges: [],
 
+    completedMissionIds: [],
+
     currentStreak: 0,
 };

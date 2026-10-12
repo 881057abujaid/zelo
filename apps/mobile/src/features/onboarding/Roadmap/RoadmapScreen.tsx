@@ -3,65 +3,32 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import { styles } from "./RoadmapScreen.styles";
-import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 
-const roadmapItems = [
-    {
-        id: "1",
-        title: "JavaScript Foundations",
-        description: "Build your core coding foundation",
-        status: "completed",
-        icon: "✓",
-    },
-    {
-        id: "2",
-        title: "Core JavaScript",
-        description: "Strengthen your JavaScript fundamentals",
-        status: "current",
-        icon: "→",
-    },
-    {
-        id: "3",
-        title: "Async JavaScript",
-        description: "Master promises, async/await and APIs",
-        status: "locked",
-        icon: "🔒",
-    },
-    {
-        id: "4",
-        title: "React Fundamentals",
-        description: "Build interactive user interfaces",
-        status: "locked",
-        icon: "🔒",
-    },
-    {
-        id: "5",
-        title: "Node.js & Express",
-        description: "Build powerful backend applications",
-        status: "locked",
-        icon: "🔒",
-    },
-    {
-        id: "6",
-        title: "APIs & Databases",
-        description: "Connect your applications to real data",
-        status: "locked",
-        icon: "🔒",
-    },
-    {
-        id: "7",
-        title: "Full-Stack Project",
-        description: "Build your first complete application",
-        status: "locked",
-        icon: "🔒",
-    },
-];
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
+import { useProgressStore } from "@/features/progress/progressStore";
+
+import { generateRoadmap } from "@/features/roadmap/roadmap.engine";
+
+import type {
+    MissionStatus,
+    RoadmapNode,
+} from "@/features/roadmap/roadmap.types";
 
 export default function RoadmapScreen() {
+    // Onboarding data
     const assessmentResults = useOnboardingStore((state) => state.assessmentResults);
     const selectedGoal = useOnboardingStore((state) => state.selectedGoal);
     const experienceLevel = useOnboardingStore((state) => state.experienceLevel);
 
+    // Player progress
+    const completedMissionIds = useProgressStore((state) => state.completedMissionIds);
+
+    // Safe defaults in case onboarding data is missing
+    const goal = selectedGoal ?? "fullstack";
+
+    const playerExperienceLevel = experienceLevel ?? "complete-beginner";
+
+    // Assessment summary
     const finalScore = assessmentResults?.correctAnswers ?? 0;
     const totalQuestions = assessmentResults?.totalQuestions ?? 0;
     const percentage = assessmentResults?.percentage ?? 0;
@@ -79,6 +46,61 @@ export default function RoadmapScreen() {
     };
 
     const level = getLevel();
+
+    // Generate the roadmap dynamically
+    const generatedRoadmap = generateRoadmap(
+        goal,
+        playerExperienceLevel,
+        assessmentResults,
+        completedMissionIds,
+    );
+
+    // Determine the overall status of each roadmap node
+    const getNodeStatus = (node: RoadmapNode): MissionStatus => {
+        const nodeMissions = node.missions.map((mission) =>
+            generatedRoadmap.missions.find(
+                (generatedMission) =>
+                    generatedMission.id === mission.id,
+            ),
+        ).filter(
+            (mission) => mission !== undefined,
+        );
+
+        if (nodeMissions.length === 0) {
+            return "locked";
+        }
+
+        if (
+            nodeMissions.every(
+                (mission) => mission.status === "completed",
+            )
+        ) {
+            return "completed";
+        }
+
+        if (
+            nodeMissions.some(
+                (mission) => mission.status === "current",
+            )
+        ) {
+            return "current";
+        }
+
+        return "locked";
+    };
+
+    const getStatusIcon = (status: MissionStatus) => {
+        switch (status) {
+            case "completed":
+                return "✓";
+
+            case "current":
+                return "→";
+
+            case "locked":
+                return "🔒";
+        }
+    };
 
     const handleStart = () => {
         router.push("/onboarding/mission");
@@ -145,72 +167,120 @@ export default function RoadmapScreen() {
                     </Text>
                 </View>
 
-                {/* Roadmap */}
+                {/* Generated Roadmap */}
                 <View style={styles.roadmap}>
-                    {roadmapItems.map((item, index) => (
-                        <View
-                            key={item.id}
-                            style={styles.roadmapItem}
-                        >
-                            <View style={styles.timeline}>
-                                <View
-                                    style={[
-                                        styles.node,
-                                        item.status === "completed" &&
-                                        styles.completedNode,
-                                        item.status === "current" &&
-                                        styles.currentNode,
-                                        item.status === "locked" &&
-                                        styles.lockedNode,
-                                    ]}
-                                >
-                                    <Text
-                                        style={[
-                                            styles.nodeText,
-                                            item.status === "completed" &&
-                                            styles.completedNodeText,
-                                        ]}
-                                    >
-                                        {item.icon}
-                                    </Text>
-                                </View>
+                    {generatedRoadmap.nodes.map((node, index) => {
+                        const status = getNodeStatus(node);
 
-                                {index < roadmapItems.length - 1 && (
+                        return (
+                            <View
+                                key={node.id}
+                                style={styles.roadmapItem}
+                            >
+                                {/* Timeline */}
+                                <View style={styles.timeline}>
                                     <View
                                         style={[
-                                            styles.connector,
-                                            item.status === "completed" &&
-                                            styles.completedConnector,
+                                            styles.node,
+                                            status === "completed" &&
+                                            styles.completedNode,
+                                            status === "current" &&
+                                            styles.currentNode,
+                                            status === "locked" &&
+                                            styles.lockedNode,
                                         ]}
-                                    />
-                                )}
-                            </View>
-
-                            <View
-                                style={[
-                                    styles.roadmapCard,
-                                    item.status === "current" &&
-                                    styles.currentCard,
-                                ]}
-                            >
-                                <Text style={styles.itemTitle}>
-                                    {item.title}
-                                </Text>
-
-                                <Text style={styles.itemDescription}>
-                                    {item.description}
-                                </Text>
-
-                                {item.status === "current" && (
-                                    <View style={styles.currentBadge}>
-                                        <Text style={styles.currentBadgeText}>
-                                            CURRENT
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.nodeText,
+                                                status === "completed" &&
+                                                styles.completedNodeText,
+                                            ]}
+                                        >
+                                            {getStatusIcon(status)}
                                         </Text>
                                     </View>
-                                )}
+
+                                    {index <
+                                        generatedRoadmap.nodes.length - 1 && (
+                                            <View
+                                                style={[
+                                                    styles.connector,
+                                                    status === "completed" &&
+                                                    styles.completedConnector,
+                                                ]}
+                                            />
+                                        )}
+                                </View>
+
+                                {/* Roadmap Card */}
+                                <View
+                                    style={[
+                                        styles.roadmapCard,
+                                        status === "current" &&
+                                        styles.currentCard,
+                                    ]}
+                                >
+                                    <Text style={styles.itemTitle}>
+                                        {node.title}
+                                    </Text>
+
+                                    <Text style={styles.itemDescription}>
+                                        {node.description}
+                                    </Text>
+
+                                    {status === "current" && (
+                                        <View style={styles.currentBadge}>
+                                            <Text
+                                                style={styles.currentBadgeText}
+                                            >
+                                                CURRENT
+                                            </Text>
+                                        </View>
+                                    )}
+
+                                    {/* Missions inside each node */}
+                                    {node.missions.map((mission) => {
+                                        const generatedMission =
+                                            generatedRoadmap.missions.find(
+                                                (item) =>
+                                                    item.id === mission.id,
+                                            );
+
+                                        const missionStatus =
+                                            generatedMission?.status ??
+                                            "locked";
+
+                                        return (
+                                            <View
+                                                key={mission.id}
+                                                style={{
+                                                    marginTop: 12,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={styles.itemDescription}
+                                                >
+                                                    {getStatusIcon(
+                                                        missionStatus,
+                                                    )}{" "}
+                                                    {mission.title}
+                                                </Text>
+
+                                                <Text
+                                                    style={styles.itemDescription}
+                                                >
+                                                    {mission.estimatedMinutes} min
+                                                    {" · "}
+                                                    {mission.difficulty}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                                </View>
                             </View>
-                        </View>
-                    ))}
+                        );
+                    })}
                 </View>
 
                 {/* Nova Message */}
