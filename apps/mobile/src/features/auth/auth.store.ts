@@ -5,6 +5,7 @@ import type { AuthenticatedUser } from "./auth.service";
 import {
     getCurrentUser,
     isUnauthorizedError,
+    completeUserOnboarding,
 } from "./auth.service";
 
 import {
@@ -35,6 +36,8 @@ interface AuthState {
 
     restoreSession: () => Promise<void>;
 
+    completeOnboarding: () => Promise<void>;
+
     updateProfile: (
         payload: UpdateProfilePayload,
     ) => Promise<void>;
@@ -48,10 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     login: async (token, user) => {
         await saveAccessToken(token);
 
-        set({
-            user,
-            isAuthenticated: true,
-        });
+        set({ user, isAuthenticated: true });
     },
 
     logout: async () => {
@@ -74,6 +74,11 @@ export const useAuthStore = create<AuthState>((set) => ({
             const token = await getAccessToken();
 
             if (!token) {
+                set({ user: null, isAuthenticated: false });
+                return;
+            }
+
+            if (!token) {
                 set({
                     user: null,
                     isAuthenticated: false,
@@ -84,6 +89,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
             // Ask the backend to verify the saved token.
             const user = await getCurrentUser(token);
+
+            set({ user, isAuthenticated: true });
 
             set({
                 user,
@@ -118,6 +125,25 @@ export const useAuthStore = create<AuthState>((set) => ({
                 isRestoringSession: false,
             });
         }
+    },
+
+    completeOnboarding: async () => {
+        const token = await getAccessToken();
+
+        if (!token) {
+            throw new Error("Authentication required to complete onboarding.");
+        }
+
+        await completeUserOnboarding(token);
+
+        set((state) => ({
+            user: state.user
+                ? {
+                    ...state.user,
+                    isOnboardingComplete: true,
+                }
+                : null,
+        }));
     },
 
     updateProfile: async (payload) => {

@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { registerSchema, loginSchema } from "./auth.validation.js";
-import { registerUser, loginUser, getCurrentUser } from "./auth.service.js";
+import { registerUser, loginUser, getCurrentUser, completeUserOnboarding } from "./auth.service.js";
 import { AuthenticatedRequest } from "@/middlewares/auth.middleware.js";
 
 export async function register(
@@ -144,6 +144,37 @@ export async function getMe(
         res.status(500).json({
             success: false,
             message: "Unable to retrieve current user.",
+        });
+    }
+}
+
+export async function completeOnboarding(
+    req: AuthenticatedRequest,
+    res: Response
+) {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required.",
+            });
+        }
+
+        const user = await completeUserOnboarding(req.userId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Onboarding completed successfully.",
+            data: {
+                user,
+            },
+        });
+    } catch (error) {
+        console.error("Complete onboarding error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to complete onboarding.",
         });
     }
 }

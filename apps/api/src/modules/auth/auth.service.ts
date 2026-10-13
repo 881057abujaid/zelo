@@ -18,6 +18,7 @@ export async function registerUser(input: RegisterInput) {
         select: {
             username: true,
             email: true,
+            isOnboardingComplete: true,
         },
     });
 
@@ -111,6 +112,7 @@ export async function loginUser(input: LoginInput) {
             displayName: user.displayName,
             avatarUrl: user.avatarUrl,
             totalXp: user.totalXp,
+            isOnboardingComplete: user.isOnboardingComplete,
         },
     };
 }
@@ -127,6 +129,24 @@ export async function getCurrentUser(userId: string) {
             displayName: true,
             avatarUrl: true,
             totalXp: true,
+            isOnboardingComplete: true,
+        },
+    });
+
+    return user;
+}
+
+export async function completeUserOnboarding(userId: string) {
+    const user = await prisma.user.update({
+        where: {
+            id: userId,
+        },
+        data: {
+            isOnboardingComplete: true,
+        },
+        select: {
+            id: true,
+            isOnboardingComplete: true,
         },
     });
 

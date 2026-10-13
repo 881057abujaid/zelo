@@ -4,6 +4,7 @@ import { router } from "expo-router";
 
 import { styles } from "./RoadmapScreen.styles";
 
+import { useAuthStore } from "@/features/auth/auth.store";
 import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { useProgressStore } from "@/features/progress/progressStore";
 
@@ -19,6 +20,7 @@ export default function RoadmapScreen() {
     const assessmentResults = useOnboardingStore((state) => state.assessmentResults);
     const selectedGoal = useOnboardingStore((state) => state.selectedGoal);
     const experienceLevel = useOnboardingStore((state) => state.experienceLevel);
+    const completeOnboarding = useAuthStore((state) => state.completeOnboarding);
 
     // Player progress
     const completedMissionIds = useProgressStore((state) => state.completedMissionIds);
@@ -102,8 +104,13 @@ export default function RoadmapScreen() {
         }
     };
 
-    const handleStart = () => {
-        router.push("/onboarding/mission");
+    const handleStart = async () => {
+        try {
+            await completeOnboarding();
+            router.replace("/(tabs)/home");
+        } catch (error) {
+            console.error("Failed to complete onboarding:", error);
+        }
     };
 
     return (

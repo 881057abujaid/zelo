@@ -1,0 +1,35 @@
+import { View, Text, StyleSheet } from "react-native";
+
+import { colors } from "@/constants/colors";
+
+export default function ProgressScreen() {
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>Your Progress 📈</Text>
+            <Text style={styles.subtitle}>
+                Track your XP, streaks and achievements.
+            </Text>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        backgroundColor: colors.background,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: "700",
+        color: colors.primary,
+    },
+    subtitle: {
+        marginTop: 8,
+        fontSize: 15,
+        textAlign: "center",
+        color: "#777777",
+    },
+});

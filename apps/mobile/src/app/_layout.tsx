@@ -9,21 +9,14 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
 
-  const isAuthenticated = useAuthStore(
-    (state) => state.isAuthenticated,
-  );
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isRestoringSession = useAuthStore((state) => state.isRestoringSession);
+  const restoreSession = useAuthStore((state) => state.restoreSession);
 
-  const isRestoringSession = useAuthStore(
-    (state) => state.isRestoringSession,
-  );
+  const [hasStartedRestoration, setHasStartedRestoration] = useState(false);
 
-  const restoreSession = useAuthStore(
-    (state) => state.restoreSession,
-  );
-
-  const [hasStartedRestoration, setHasStartedRestoration] =
-    useState(false);
-
+  // 1️⃣ Restore session on app start
   useEffect(() => {
     let isMounted = true;
 
@@ -44,34 +37,51 @@ export default function RootLayout() {
     };
   }, [restoreSession]);
 
+  // 2️⃣ Route protection based on auth state and onboarding
   useEffect(() => {
-    if (!hasStartedRestoration || isRestoringSession) {
-      return;
-    }
+    if (!hasStartedRestoration || isRestoringSession) return;
 
     const currentRoute = segments[0];
 
-    const isProtectedRoute =
-      currentRoute === "home" ||
-      currentRoute === "profile";
+    const isOnboardingRoute = currentRoute === "onboarding";
+    const isTabsRoute = currentRoute === "(tabs)";
 
     const isAuthRoute =
       currentRoute === undefined ||
       currentRoute === "login" ||
       currentRoute === "register";
 
-    if (!isAuthenticated && isProtectedRoute) {
-      router.replace("/");
+    if (!isAuthenticated) {
+      if (
+        isOnboardingRoute ||
+        isTabsRoute ||
+        currentRoute === "home" ||
+        currentRoute === "profile"
+      ) {
+        router.replace("/");
+      }
+
       return;
     }
 
-    if (isAuthenticated && isAuthRoute) {
-      router.replace("/home");
+    if (!user) return;
+
+    if (!user.isOnboardingComplete) {
+      if (!isOnboardingRoute) {
+        router.replace("/onboarding/nova");
+      }
+
+      return;
+    }
+
+    if (isOnboardingRoute || isAuthRoute || !isTabsRoute) {
+      router.replace("/(tabs)/home");
     }
   }, [
     hasStartedRestoration,
     isRestoringSession,
     isAuthenticated,
+    user,
     segments,
     router,
   ]);

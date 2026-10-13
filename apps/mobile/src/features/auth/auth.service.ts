@@ -18,6 +18,7 @@ export interface RegisteredUser {
     email: string;
     displayName: string | null;
     totalXp: number;
+    isOnboardingComplete: boolean;
     createdAt: string;
 }
 
@@ -28,6 +29,18 @@ export interface AuthenticatedUser {
     displayName: string | null;
     avatarUrl: string | null;
     totalXp: number;
+    isOnboardingComplete: boolean;
+}
+
+export interface CompleteOnboardingResponse {
+    success: true;
+    message: string;
+    data: {
+        user: {
+            id: string;
+            isOnboardingComplete: boolean;
+        };
+    };
 }
 
 interface RegisterResponse {
@@ -102,6 +115,22 @@ export async function getCurrentUser(
     );
 
     return response.data.data.user;
+}
+
+export async function completeUserOnboarding(
+    token: string,
+): Promise<CompleteOnboardingResponse> {
+    const response = await api.patch<CompleteOnboardingResponse>(
+        "/auth/onboarding/complete",
+        {},
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        },
+    );
+
+    return response.data;
 }
 
 export function isUnauthorizedError(error: unknown): boolean {

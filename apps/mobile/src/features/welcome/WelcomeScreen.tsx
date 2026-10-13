@@ -40,7 +40,7 @@ export default function WelcomeScreen() {
                 {/* Actions */}
                 <View style={styles.actions}>
                     <Pressable
-                        onPress={() => router.push("/onboarding/nova")}
+                        onPress={() => router.push("/register")}
                         style={({ pressed }) => [
                             styles.primaryButton,
                             pressed && styles.primaryButtonPressed,
