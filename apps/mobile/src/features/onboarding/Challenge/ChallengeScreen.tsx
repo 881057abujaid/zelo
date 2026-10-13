@@ -174,7 +174,7 @@ export default function ChallengeScreen() {
             setISOutofLives(true);
         }
 
-        setIsCompleted(true);
+        setIsCompleted(result.executed && result.isCorrect);
 
         const isLastChallenge =
             currentChallengeIndex === missionChallenges.length - 1;

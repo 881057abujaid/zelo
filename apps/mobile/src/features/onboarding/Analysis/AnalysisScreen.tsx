@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -56,7 +56,10 @@ export default function AnalysisScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.content}>
+            <ScrollView
+                contentContainerStyle={styles.content}
+                showsVerticalScrollIndicator={false}
+            >
                 <OnboardingProgress
                     currentStep={4}
                     totalSteps={4}
@@ -108,9 +111,7 @@ export default function AnalysisScreen() {
                         <View
                             style={[
                                 styles.progressFill,
-                                {
-                                    width: `${percentage}%`,
-                                },
+                                { width: `${percentage}%` },
                             ]}
                         />
                     </View>
@@ -177,7 +178,7 @@ export default function AnalysisScreen() {
                         </Text>
                     </Pressable>
                 </View>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
