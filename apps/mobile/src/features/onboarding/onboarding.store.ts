@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type OnboardingGoal =
     | "web"
@@ -73,52 +75,67 @@ const initialState = {
     assessmentResults: null,
 };
 
-export const useOnboardingStore =
-    create<OnboardingState>((set) => ({
-        ...initialState,
+export const useOnboardingStore = create<OnboardingState>()(
+    persist(
+        (set) => ({
+            ...initialState,
 
-        setSelectedGoal: (goal) => {
-            set({
-                selectedGoal: goal,
-            });
-        },
+            setSelectedGoal: (goal) => {
+                set({
+                    selectedGoal: goal,
+                });
+            },
 
-        setExperienceLevel: (level) => {
-            set({
-                experienceLevel: level,
-            });
-        },
+            setExperienceLevel: (level) => {
+                set({
+                    experienceLevel: level,
+                });
+            },
 
-        setAnswer: (questionId, answerId) => {
-            set((state) => ({
-                answers: {
-                    ...state.answers,
-                    [questionId]: answerId,
-                },
-            }));
-        },
+            setAnswer: (questionId, answerId) => {
+                set((state) => ({
+                    answers: {
+                        ...state.answers,
+                        [questionId]: answerId,
+                    },
+                }));
+            },
 
-        setCurrentQuestionIndex: (index) => {
-            set({
-                currentQuestionIndex: index,
-            });
-        },
+            setCurrentQuestionIndex: (index) => {
+                set({
+                    currentQuestionIndex: index,
+                });
+            },
 
-        setAssessmentResults: (results) => {
-            set({
-                assessmentResults: results,
-            });
-        },
+            setAssessmentResults: (results) => {
+                set({
+                    assessmentResults: results,
+                });
+            },
 
-        resetAssessment: () => {
-            set({
-                answers: {},
-                currentQuestionIndex: 0,
-                assessmentResults: null,
-            });
-        },
+            resetAssessment: () => {
+                set({
+                    answers: {},
+                    currentQuestionIndex: 0,
+                    assessmentResults: null,
+                });
+            },
 
-        resetOnboarding: () => {
-            set(initialState);
+            resetOnboarding: () => {
+                set(initialState);
+            },
+        }),
+        {
+            name: "zelo-onboarding-storage",
+            storage: createJSONStorage(() => AsyncStorage),
+
+            partialize: (state) => ({
+                selectedGoal: state.selectedGoal,
+                experienceLevel: state.experienceLevel,
+                answers: state.answers,
+                currentQuestionIndex: state.currentQuestionIndex,
+                assessmentResults: state.assessmentResults,
+            }),
         },
-    }));
+    ),
+);
