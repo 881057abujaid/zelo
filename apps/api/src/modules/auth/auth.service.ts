@@ -137,18 +137,61 @@ export async function getCurrentUser(userId: string) {
 }
 
 export async function completeUserOnboarding(userId: string) {
-    const user = await prisma.user.update({
-        where: {
-            id: userId,
-        },
-        data: {
-            isOnboardingComplete: true,
-        },
-        select: {
-            id: true,
-            isOnboardingComplete: true,
-        },
-    });
+    return prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                isOnboardingComplete: true,
+            },
+        });
 
-    return user;
+        if (!user) {
+            throw new Error("USER_NOT_FOUND");
+        }
+
+        if (user.isOnboardingComplete) {
+            return user;
+        }
+
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        const completion = await tx.user.updateMany({
+            where: {
+                id: userId,
+                isOnboardingComplete: false,
+            },
+            data: {
+                isOnboardingComplete: true,
+            },
+        });
+
+        if (completion.count === 1) {
+            await tx.userStreak.upsert({
+                where: { userId },
+                create: {
+                    userId,
+                    currentStreak: 1,
+                    longestStreak: 1,
+                    lastActivityAt: today,
+                },
+                update: {},
+            });
+        }
+
+        const updatedUser = await tx.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                isOnboardingComplete: true,
+            },
+        });
+
+        if (!updatedUser) {
+            throw new Error("USER_NOT_FOUND");
+        }
+
+        return updatedUser;
+    });
 }
