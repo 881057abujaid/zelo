@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { AuthenticatedUser } from "./auth.service";
+import { setUnauthorizedHandler } from "@/lib/api";
 
 import {
     getCurrentUser,
@@ -154,3 +155,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
     },
 }));
+
+setUnauthorizedHandler(async () => {
+    await useAuthStore.getState().logout();
+});
