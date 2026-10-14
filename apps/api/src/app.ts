@@ -5,6 +5,8 @@ import helmet from "helmet";
 import healthRouter from "./modules/health/health.routes.js";
 import authRouter from "./modules/auth/auth.routes.js";
 import usersRouter from "./modules/users/users.routes.js";
+import streaksRouter from "./modules/streaks/streaks.routes.js";
+import challengesRouter from "./modules/challenges/challenges.routes.js";
 
 import {
     errorHandler,
@@ -39,6 +41,8 @@ app.get("/", (_req, res) => {
 app.use("/api/v1/health", healthRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/streaks", streaksRouter);
+app.use("/api/v1/challenges", challengesRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
