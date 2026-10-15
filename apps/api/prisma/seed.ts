@@ -93,6 +93,63 @@ const frontendChallenges = [
     },
 ];
 
+const htmlTestCases = [
+    {
+        challengeSlug: "first-html-element",
+        title: "Contains an HTML heading",
+        input: {
+            requiredElement: "h1",
+        },
+        expected: {
+            containsElement: "h1",
+        },
+        isHidden: false,
+        orderIndex: 1,
+    },
+    {
+        challengeSlug: "create-page-heading",
+        title: "Contains the required heading text",
+        input: {
+            requiredText: "Welcome to ZELO!",
+            requiredElement: "h1",
+        },
+        expected: {
+            containsText: "Welcome to ZELO!",
+            containsElement: "h1",
+        },
+        isHidden: false,
+        orderIndex: 1,
+    },
+    {
+        challengeSlug: "first-html-paragraph",
+        title: "Contains the required paragraph",
+        input: {
+            requiredText: "I am learning HTML with ZELO.",
+            requiredElement: "p",
+        },
+        expected: {
+            containsText: "I am learning HTML with ZELO.",
+            containsElement: "p",
+        },
+        isHidden: false,
+        orderIndex: 1,
+    },
+    {
+        challengeSlug: "simple-html-profile",
+        title: "Contains a heading and paragraphs",
+        input: {
+            requiredElements: ["h1", "p"],
+            minimumParagraphs: 2,
+        },
+        expected: {
+            containsElements: ["h1", "p"],
+            minimumParagraphs: 2,
+        },
+        isHidden: false,
+        orderIndex: 1,
+    },
+];
+
 async function main() {
     console.log("🌱 ZELO database seeding started...");
 
@@ -151,6 +208,63 @@ async function main() {
         });
 
         console.log(`✅ Challenge seeded: ${result.title}`);
+    }
+
+    for (const testCase of htmlTestCases) {
+        const challenge = await prisma.challenge.findUnique({
+            where: {
+                worldId_slug: {
+                    worldId: frontendWorld.id,
+                    slug: testCase.challengeSlug,
+                },
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!challenge) {
+            throw new Error(
+                `Challenge not found: ${testCase.challengeSlug}`,
+            );
+        }
+
+        const existingTestCases = await prisma.challengeTestCase.findMany({
+            where: {
+                challengeId: challenge.id,
+                title: testCase.title,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (existingTestCases.length > 0) {
+            await prisma.challengeTestCase.update({
+                where: {
+                    id: existingTestCases[0].id,
+                },
+                data: {
+                    input: testCase.input,
+                    expected: testCase.expected,
+                    isHidden: testCase.isHidden,
+                    orderIndex: testCase.orderIndex,
+                },
+            });
+        } else {
+            await prisma.challengeTestCase.create({
+                data: {
+                    challengeId: challenge.id,
+                    title: testCase.title,
+                    input: testCase.input,
+                    expected: testCase.expected,
+                    isHidden: testCase.isHidden,
+                    orderIndex: testCase.orderIndex,
+                },
+            });
+        }
+
+        console.log(`✅ Test case seeded: ${testCase.title}`);
     }
 
     console.log("🎉 All Worlds seeded successfully!");
