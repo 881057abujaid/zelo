@@ -39,3 +39,35 @@ export async function getPublishedChallenges() {
 
     return challenges;
 }
+
+export async function getPublishedChallengeBySlug(slug: string) {
+    const challenge = await prisma.challenge.findFirst({
+        where: {
+            slug,
+            isPublished: true,
+            world: {
+                isPublished: true,
+            },
+        },
+        select: {
+            id: true,
+            slug: true,
+            title: true,
+            description: true,
+            instructions: true,
+            difficulty: true,
+            xpReward: true,
+            orderIndex: true,
+            world: {
+                select: {
+                    id: true,
+                    slug: true,
+                    title: true,
+                    icon: true,
+                },
+            },
+        },
+    });
+
+    return challenge;
+}
