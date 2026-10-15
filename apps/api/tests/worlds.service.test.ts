@@ -1,18 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findManyMock } = vi.hoisted(() => ({
+const { findManyMock, findFirstMock } = vi.hoisted(() => ({
     findManyMock: vi.fn(),
+    findFirstMock: vi.fn(),
 }));
 
 vi.mock("@/config/prisma.js", () => ({
     prisma: {
         world: {
             findMany: findManyMock,
+            findFirst: findFirstMock,
         },
     },
 }));
 
-import { getPublishedWorlds } from "../src/modules/worlds/worlds.service.js";
+import {
+    getPublishedWorldChallenges,
+    getPublishedWorlds,
+} from "../src/modules/worlds/worlds.service.js";
 
 describe("getPublishedWorlds", () => {
     beforeEach(() => {
@@ -87,12 +92,108 @@ describe("getPublishedWorlds", () => {
     });
 
     it("should propagate database errors", async () => {
-        const error = new Error("Database connection failed");
-
-        findManyMock.mockRejectedValue(error);
+        findManyMock.mockRejectedValue(
+            new Error("Database connection failed")
+        );
 
         await expect(getPublishedWorlds()).rejects.toThrow(
             "Database connection failed"
         );
+    });
+});
+
+describe("getPublishedWorldChallenges", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("should return published challenges for a world", async () => {
+        const mockWorld = {
+            id: "world-1",
+            challenges: [
+                {
+                    id: "challenge-1",
+                    slug: "html-basics",
+                    title: "HTML Basics",
+                    description: "Learn HTML fundamentals.",
+                    instructions: "Create your first HTML element.",
+                    difficulty: "EASY",
+                    xpReward: 10,
+                    orderIndex: 1,
+                },
+                {
+                    id: "challenge-2",
+                    slug: "css-basics",
+                    title: "CSS Basics",
+                    description: "Learn CSS fundamentals.",
+                    instructions: "Style an HTML element.",
+                    difficulty: "EASY",
+                    xpReward: 15,
+                    orderIndex: 2,
+                },
+            ],
+        };
+
+        findFirstMock.mockResolvedValue(mockWorld);
+
+        const result = await getPublishedWorldChallenges("frontend");
+
+        expect(result).toEqual(mockWorld);
+        expect(findFirstMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("should query a published world and its published challenges in order", async () => {
+        findFirstMock.mockResolvedValue({
+            id: "world-1",
+            challenges: [],
+        });
+
+        await getPublishedWorldChallenges("frontend");
+
+        expect(findFirstMock).toHaveBeenCalledWith({
+            where: {
+                slug: "frontend",
+                isPublished: true,
+            },
+            select: {
+                id: true,
+                challenges: {
+                    where: {
+                        isPublished: true,
+                    },
+                    select: {
+                        id: true,
+                        slug: true,
+                        title: true,
+                        description: true,
+                        instructions: true,
+                        difficulty: true,
+                        xpReward: true,
+                        orderIndex: true,
+                    },
+                    orderBy: {
+                        orderIndex: "asc",
+                    },
+                },
+            },
+        });
+    });
+
+    it("should return null when the world does not exist or is unpublished", async () => {
+        findFirstMock.mockResolvedValue(null);
+
+        const result = await getPublishedWorldChallenges("unknown-world");
+
+        expect(result).toBeNull();
+    });
+
+    it("should propagate database errors", async () => {
+        findFirstMock.mockRejectedValue(
+            new Error("Database connection failed")
+        );
+
+        await expect(
+            getPublishedWorldChallenges("frontend")
+        ).rejects.toThrow("Database connection failed");
     });
 });
