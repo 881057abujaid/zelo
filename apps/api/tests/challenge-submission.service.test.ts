@@ -1,19 +1,46 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prismaMock, evaluateHtmlMock } = vi.hoisted(() => ({
-    prismaMock: {
-        challenge: {
-            findFirst: vi.fn(),
-        },
-        challengeTestCase: {
-            findMany: vi.fn(),
+const { prismaMock, evaluateHtmlMock, txMock } = vi.hoisted(() => {
+    const txMock = {
+        userProgress: {
+            findUnique: vi.fn(),
+            upsert: vi.fn(),
         },
         challengeAttempt: {
             create: vi.fn(),
         },
-    },
-    evaluateHtmlMock: vi.fn(),
-}));
+        user: {
+            update: vi.fn(),
+        },
+    };
+
+    return {
+        txMock,
+        evaluateHtmlMock: vi.fn(),
+        prismaMock: {
+            challenge: {
+                findFirst: vi.fn(),
+            },
+            challengeTestCase: {
+                findMany: vi.fn(),
+            },
+            challengeAttempt: {
+                create: vi.fn(),
+            },
+            userProgress: {
+                findUnique: vi.fn(),
+                upsert: vi.fn(),
+            },
+            user: {
+                update: vi.fn(),
+            },
+            $transaction: vi.fn(
+                async (callback: (tx: typeof txMock) => Promise<unknown>) =>
+                    callback(txMock),
+            ),
+        },
+    };
+});
 
 vi.mock("@/config/prisma.js", () => ({
     prisma: prismaMock,
@@ -28,6 +55,21 @@ import { submitHtmlChallenge } from "../src/modules/challenges/challenge-submiss
 describe("submitHtmlChallenge", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+
+        prismaMock.$transaction.mockImplementation(
+            async (callback) => callback(txMock),
+        );
+
+        txMock.userProgress.findUnique.mockResolvedValue(null);
+
+        txMock.userProgress.upsert.mockResolvedValue({});
+        txMock.user.update.mockResolvedValue({});
+
+        txMock.challengeAttempt.create.mockResolvedValue({
+            id: "attempt-123",
+            status: "PASSED",
+            executedAt: new Date("2026-10-15T10:00:00.000Z"),
+        });
     });
 
     const challenge = {
@@ -104,7 +146,7 @@ describe("submitHtmlChallenge", () => {
             ],
         });
 
-        prismaMock.challengeAttempt.create.mockResolvedValue({
+        txMock.challengeAttempt.create.mockResolvedValue({
             id: "attempt-123",
             status: "PASSED",
             executedAt: new Date("2026-10-15T10:00:00.000Z"),
@@ -126,17 +168,36 @@ describe("submitHtmlChallenge", () => {
 
         expect(result.attempt.status).toBe("PASSED");
 
-        expect(prismaMock.challengeAttempt.create).toHaveBeenCalledWith(
+        expect(txMock.userProgress.upsert).toHaveBeenCalledWith(
             expect.objectContaining({
-                data: expect.objectContaining({
-                    userId: "user-123",
-                    challengeId: "challenge-123",
-                    status: "PASSED",
-                    submission,
-                    errorMessage: null,
+                where: {
+                    userId_challengeId: {
+                        userId: "user-123",
+                        challengeId: "challenge-123",
+                    },
+                },
+                create: expect.objectContaining({
+                    isCompleted: true,
+                    xpEarned: 10,
                 }),
             }),
         );
+
+        expect(txMock.user.update).toHaveBeenCalledWith({
+            where: {
+                id: "user-123",
+            },
+            data: {
+                totalXp: {
+                    increment: 10,
+                },
+            },
+        });
+
+        expect(result.progress).toEqual({
+            isCompleted: true,
+            xpAwarded: 10,
+        });
 
         expect(result.evaluation.checks).toHaveLength(1);
         expect(result.evaluation.checks[0]?.testCaseId).toBe("test-visible");
@@ -195,6 +256,9 @@ describe("submitHtmlChallenge", () => {
                 }),
             }),
         );
+        expect(prismaMock.$transaction).not.toHaveBeenCalled();
+        expect(txMock.userProgress.upsert).not.toHaveBeenCalled();
+        expect(txMock.user.update).not.toHaveBeenCalled();
     });
 
     it("does not expose hidden test results", async () => {
@@ -246,5 +310,172 @@ describe("submitHtmlChallenge", () => {
                 (check) => check.testCaseId === "test-hidden",
             ),
         ).toBe(false);
+    });
+
+    it("does not award XP again for an already completed challenge", async () => {
+        prismaMock.challenge.findFirst.mockResolvedValue(challenge);
+        prismaMock.challengeTestCase.findMany.mockResolvedValue(testCases);
+
+        txMock.userProgress.findUnique.mockResolvedValue({
+            isCompleted: true,
+        });
+
+        txMock.challengeAttempt.create.mockResolvedValue({
+            id: "attempt-duplicate",
+            status: "PASSED",
+            executedAt: new Date("2026-10-15T10:15:00.000Z"),
+        });
+
+        evaluateHtmlMock.mockReturnValue({
+            passed: true,
+            totalTests: 2,
+            passedTests: 2,
+            failedTests: 0,
+            checks: [
+                {
+                    testCaseId: "test-visible",
+                    title: "Contains an HTML heading",
+                    passed: true,
+                    message: "All requirements satisfied.",
+                },
+                {
+                    testCaseId: "test-hidden",
+                    title: "Hidden heading check",
+                    passed: true,
+                    message: "All requirements satisfied.",
+                },
+            ],
+        });
+
+        const result = await submitHtmlChallenge(
+            "user-123",
+            "first-html-element",
+            "<h1>Hello World</h1>",
+        );
+
+        expect(result.success).toBe(true);
+
+        if (!result.success) {
+            throw new Error("Expected submission to succeed.");
+        }
+
+        expect(result.progress).toEqual({
+            isCompleted: true,
+            xpAwarded: 0,
+        });
+
+        expect(txMock.userProgress.upsert).not.toHaveBeenCalled();
+        expect(txMock.user.update).not.toHaveBeenCalled();
+
+        expect(txMock.challengeAttempt.create).toHaveBeenCalledTimes(1);
+    });
+
+    it("retries the transaction when a serialization conflict occurs", async () => {
+        prismaMock.challenge.findFirst.mockResolvedValue(challenge);
+        prismaMock.challengeTestCase.findMany.mockResolvedValue(testCases);
+
+        evaluateHtmlMock.mockReturnValue({
+            passed: true,
+            totalTests: 2,
+            passedTests: 2,
+            failedTests: 0,
+            checks: [
+                {
+                    testCaseId: "test-visible",
+                    title: "Contains an HTML heading",
+                    passed: true,
+                    message: "All requirements satisfied.",
+                },
+                {
+                    testCaseId: "test-hidden",
+                    title: "Hidden heading check",
+                    passed: true,
+                    message: "All requirements satisfied.",
+                },
+            ],
+        });
+
+        prismaMock.$transaction.mockImplementationOnce(async () => {
+            throw { code: "P2034" };
+        });
+
+        const result = await submitHtmlChallenge(
+            "user-123",
+            "first-html-element",
+            "<h1>Hello World</h1>",
+        );
+
+        expect(result.success).toBe(true);
+        expect(prismaMock.$transaction).toHaveBeenCalledTimes(2);
+
+        expect(prismaMock.$transaction).toHaveBeenLastCalledWith(
+            expect.any(Function),
+            {
+                isolationLevel: "Serializable",
+            },
+        );
+    });
+
+    it("does not award XP when a retry finds the challenge already completed", async () => {
+        prismaMock.challenge.findFirst.mockResolvedValue(challenge);
+        prismaMock.challengeTestCase.findMany.mockResolvedValue(testCases);
+
+        evaluateHtmlMock.mockReturnValue({
+            passed: true,
+            totalTests: 2,
+            passedTests: 2,
+            failedTests: 0,
+            checks: [
+                {
+                    testCaseId: "test-visible",
+                    title: "Contains an HTML heading",
+                    passed: true,
+                    message: "All requirements satisfied.",
+                },
+                {
+                    testCaseId: "test-hidden",
+                    title: "Hidden heading check",
+                    passed: true,
+                    message: "All requirements satisfied.",
+                },
+            ],
+        });
+
+        // Simulate a serialization conflict in the first transaction.
+        prismaMock.$transaction.mockImplementationOnce(async () => {
+            throw { code: "P2034" };
+        });
+
+        // On retry, the challenge is already completed.
+        txMock.userProgress.findUnique.mockResolvedValueOnce({
+            isCompleted: true,
+        });
+
+        const result = await submitHtmlChallenge(
+            "user-123",
+            "first-html-element",
+            "<h1>Hello World</h1>",
+        );
+
+        expect(result.success).toBe(true);
+
+        if (!result.success) {
+            throw new Error("Expected submission to succeed.");
+        }
+
+        // The transaction should retry.
+        expect(prismaMock.$transaction).toHaveBeenCalledTimes(2);
+
+        // The completed challenge must not award XP again.
+        expect(result.progress).toEqual({
+            isCompleted: true,
+            xpAwarded: 0,
+        });
+
+        expect(txMock.userProgress.upsert).not.toHaveBeenCalled();
+        expect(txMock.user.update).not.toHaveBeenCalled();
+
+        // The successful retry should still save the submission attempt.
+        expect(txMock.challengeAttempt.create).toHaveBeenCalledTimes(1);
     });
 });
