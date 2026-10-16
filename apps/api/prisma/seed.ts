@@ -150,6 +150,57 @@ const htmlTestCases = [
     },
 ];
 
+const achievements = [
+    {
+        slug: "first-code",
+        title: "First Code",
+        description: "Complete your first coding challenge.",
+        icon: "🏆",
+        xpRequired: null,
+        isPublished: true,
+    },
+    {
+        slug: "bug-hunter",
+        title: "Bug Hunter",
+        description: "Complete 5 coding challenges.",
+        icon: "🐛",
+        xpRequired: null,
+        isPublished: true,
+    },
+    {
+        slug: "streak-starter",
+        title: "Streak Starter",
+        description: "Maintain a 3-day learning streak.",
+        icon: "🔥",
+        xpRequired: null,
+        isPublished: true,
+    },
+    {
+        slug: "api-explorer",
+        title: "API Explorer",
+        description: "Complete your first REST API challenge.",
+        icon: "🌐",
+        xpRequired: null,
+        isPublished: true,
+    },
+    {
+        slug: "database-rookie",
+        title: "Database Rookie",
+        description: "Complete your first database challenge.",
+        icon: "🗄️",
+        xpRequired: null,
+        isPublished: true,
+    },
+    {
+        slug: "mern-builder",
+        title: "MERN Builder",
+        description: "Complete your first full-stack MERN project.",
+        icon: "🚀",
+        xpRequired: null,
+        isPublished: true,
+    },
+];
+
 async function main() {
     console.log("🌱 ZELO database seeding started...");
 
@@ -267,7 +318,25 @@ async function main() {
         console.log(`✅ Test case seeded: ${testCase.title}`);
     }
 
-    console.log("🎉 All Worlds seeded successfully!");
+    for (const achievement of achievements) {
+        const result = await prisma.achievement.upsert({
+            where: {
+                slug: achievement.slug,
+            },
+            update: {
+                title: achievement.title,
+                description: achievement.description,
+                icon: achievement.icon,
+                xpRequired: achievement.xpRequired,
+                isPublished: achievement.isPublished,
+            },
+            create: achievement,
+        });
+
+        console.log(`✅ Achievement seeded: ${result.title}`);
+    }
+
+    console.log("🎉 All Worlds, Challenges, Test Cases, and Achievements seeded successfully!");
 }
 
 main()

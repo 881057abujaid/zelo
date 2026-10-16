@@ -8,6 +8,7 @@ import usersRouter from "./modules/users/users.routes.js";
 import streaksRouter from "./modules/streaks/streaks.routes.js";
 import challengesRouter from "./modules/challenges/challenges.routes.js";
 import worldsRouter from "./modules/worlds/worlds.routes.js";
+import achievementsRouter from "./modules/achievements/achievements.routes.js";
 
 import {
     errorHandler,
@@ -45,6 +46,7 @@ app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/streaks", streaksRouter);
 app.use("/api/v1/challenges", challengesRouter);
 app.use("/api/v1/worlds", worldsRouter);
+app.use("/api/v1/achievements", achievementsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
