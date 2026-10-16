@@ -70,3 +70,111 @@ export async function updateUserProfile(
         throw error;
     }
 }
+
+export async function getUserProgress(userId: string) {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            id: true,
+            totalXp: true,
+        },
+    });
+
+    if (!user) {
+        throw new Error("USER_NOT_FOUND");
+    }
+
+    const [totalChallenges, completedChallenges, worlds] =
+        await Promise.all([
+            prisma.challenge.count({
+                where: {
+                    isPublished: true,
+                    world: {
+                        isPublished: true,
+                    },
+                },
+            }),
+
+            prisma.userProgress.count({
+                where: {
+                    userId,
+                    isCompleted: true,
+                    challenge: {
+                        isPublished: true,
+                        world: {
+                            isPublished: true,
+                        },
+                    },
+                },
+            }),
+
+            prisma.world.findMany({
+                where: {
+                    isPublished: true,
+                },
+                orderBy: {
+                    sortOrder: "asc",
+                },
+                select: {
+                    id: true,
+                    slug: true,
+                    title: true,
+                    icon: true,
+                    challenges: {
+                        where: {
+                            isPublished: true,
+                        },
+                        select: {
+                            id: true,
+                            progress: {
+                                where: {
+                                    userId,
+                                    isCompleted: true,
+                                },
+                                select: {
+                                    id: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+        ]);
+
+    const overallProgress =
+        totalChallenges === 0
+            ? 0
+            : Math.round(
+                (completedChallenges / totalChallenges) * 100
+            );
+
+    const worldProgress = worlds.map((world) => {
+        const total = world.challenges.length;
+
+        const completed = world.challenges.filter(
+            (challenge) => challenge.progress.length > 0
+        ).length;
+
+        return {
+            slug: world.slug,
+            title: world.title,
+            icon: world.icon,
+            totalChallenges: total,
+            completedChallenges: completed,
+            progressPercentage:
+                total === 0
+                    ? 0
+                    : Math.round((completed / total) * 100),
+        };
+    });
+
+    return {
+        totalXp: user.totalXp,
+        totalChallenges,
+        completedChallenges,
+        overallProgress,
+        worldProgress,
+    };
+}
