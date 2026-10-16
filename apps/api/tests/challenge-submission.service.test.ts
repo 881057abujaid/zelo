@@ -5,12 +5,20 @@ const { prismaMock, evaluateHtmlMock, txMock } = vi.hoisted(() => {
         userProgress: {
             findUnique: vi.fn(),
             upsert: vi.fn(),
+            count: vi.fn(),
         },
         challengeAttempt: {
             create: vi.fn(),
         },
         user: {
             update: vi.fn(),
+        },
+        achievement: {
+            findMany: vi.fn(),
+        },
+        userAchievement: {
+            findMany: vi.fn(),
+            createMany: vi.fn(),
         },
     };
 
@@ -63,7 +71,11 @@ describe("submitHtmlChallenge", () => {
         txMock.userProgress.findUnique.mockResolvedValue(null);
 
         txMock.userProgress.upsert.mockResolvedValue({});
+        txMock.userProgress.count.mockResolvedValue(1);
         txMock.user.update.mockResolvedValue({});
+        txMock.achievement.findMany.mockResolvedValue([]);
+        txMock.userAchievement.findMany.mockResolvedValue([]);
+        txMock.userAchievement.createMany.mockResolvedValue({ count: 0 });
 
         txMock.challengeAttempt.create.mockResolvedValue({
             id: "attempt-123",

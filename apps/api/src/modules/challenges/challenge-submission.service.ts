@@ -8,6 +8,11 @@ export async function submitHtmlChallenge(
     challengeSlug: string,
     submission: string,
 ) {
+    let unlockedAchievements: {
+        slug: string;
+        title: string;
+    }[] = [];
+
     const challenge = await prisma.challenge.findFirst({
         where: {
             slug: challengeSlug,
@@ -112,6 +117,7 @@ export async function submitHtmlChallenge(
                             attempt: savedAttempt,
                             xpAwarded: 0,
                             isCompleted: true,
+                            unlockedAchievements: [],
                         };
                     }
 
@@ -147,11 +153,77 @@ export async function submitHtmlChallenge(
                         },
                     });
 
+                    const completedCount = await tx.userProgress.count({
+                        where: {
+                            userId,
+                            isCompleted: true,
+                        },
+                    });
+
+                    const eligibleSlugs: string[] = [];
+
+                    if (completedCount >= 1) {
+                        eligibleSlugs.push("first-code");
+                    }
+
+                    if (completedCount >= 5) {
+                        eligibleSlugs.push("bug-hunter");
+                    }
+
+                    const achievements = await tx.achievement.findMany({
+                        where: {
+                            slug: {
+                                in: eligibleSlugs,
+                            },
+                            isPublished: true,
+                        },
+                        select: {
+                            id: true,
+                            slug: true,
+                            title: true,
+                        },
+                    });
+
+                    const existingAchievements = await tx.userAchievement.findMany({
+                        where: {
+                            userId,
+                            achievementId: {
+                                in: achievements.map((achievement) => achievement.id),
+                            },
+                        },
+                        select: {
+                            achievementId: true,
+                        },
+                    });
+
+                    const existingAchievementIds = new Set(
+                        existingAchievements.map((achievement) => achievement.achievementId),
+                    );
+
+                    const newAchievements = achievements.filter(
+                        (achievement) => !existingAchievementIds.has(achievement.id),
+                    );
+
+                    if (newAchievements.length > 0) {
+                        await tx.userAchievement.createMany({
+                            data: newAchievements.map((achievement) => ({
+                                userId,
+                                achievementId: achievement.id,
+                            })),
+                            skipDuplicates: true,
+                        });
+                    }
+
                     return {
                         attempt: savedAttempt,
                         xpAwarded: challenge.xpReward,
                         isCompleted: true,
+                        unlockedAchievements: newAchievements.map((achievement) => ({
+                            slug: achievement.slug,
+                            title: achievement.title,
+                        })),
                     };
+
                 },
                 {
                     isolationLevel: "Serializable",
@@ -162,6 +234,7 @@ export async function submitHtmlChallenge(
         attempt = result.attempt;
         xpAwarded = result.xpAwarded;
         isCompleted = result.isCompleted;
+        unlockedAchievements = result.unlockedAchievements;
     } else {
         attempt = await prisma.challengeAttempt.create({
             data: attemptData,
@@ -199,6 +272,7 @@ export async function submitHtmlChallenge(
             isCompleted,
             xpAwarded,
         },
+        unlockedAchievements,
     };
 }
 
