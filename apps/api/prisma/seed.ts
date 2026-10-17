@@ -6,7 +6,6 @@ const worlds = [
         title: "Frontend World",
         description:
             "Learn HTML, CSS, JavaScript, and React to build beautiful, interactive user interfaces.",
-        icon: "🌐",
         sortOrder: 1,
         isPublished: true,
     },
@@ -15,17 +14,31 @@ const worlds = [
         title: "Backend World",
         description:
             "Learn Node.js, Express.js, REST APIs, and server-side development.",
-        icon: "⚙️",
         sortOrder: 2,
+        isPublished: true,
+    },
+    {
+        slug: "database",
+        title: "Database World",
+        description:
+            "Learn database design, SQL, data management, and how to store and retrieve information efficiently.",
+        sortOrder: 3,
         isPublished: true,
     },
     {
         slug: "full-stack",
         title: "Full Stack World",
         description:
-            "Master MongoDB and combine frontend and backend skills to build complete MERN applications.",
-        icon: "🔗",
-        sortOrder: 3,
+            "Combine frontend, backend, and database skills to build complete web applications.",
+        sortOrder: 4,
+        isPublished: true,
+    },
+    {
+        slug: "ai",
+        title: "AI World",
+        description:
+            "Explore artificial intelligence, machine learning fundamentals, and AI-powered applications.",
+        sortOrder: 5,
         isPublished: true,
     },
 ];
@@ -212,7 +225,6 @@ async function main() {
             update: {
                 title: world.title,
                 description: world.description,
-                icon: world.icon,
                 sortOrder: world.sortOrder,
                 isPublished: world.isPublished,
             },

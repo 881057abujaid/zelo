@@ -10,7 +10,7 @@ export async function getPublishedWorlds() {
             slug: true,
             title: true,
             description: true,
-            icon: true,
+            imageUrl: true,
             sortOrder: true,
         },
         orderBy: {
