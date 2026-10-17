@@ -1,9 +1,13 @@
 import axios from "axios";
-
+import { Platform } from "react-native";
 import { getAccessToken } from "./secure-storage";
 
+const API_HOST = process.env.EXPO_PUBLIC_API_HOST || "localhost";
+
 const API_BASE_URL =
-    process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:5000/api/v1";
+    Platform.OS === "web"
+        ? "http://localhost:5000/api/v1"
+        : `http://${API_HOST}:5000/api/v1`;
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
