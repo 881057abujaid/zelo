@@ -57,7 +57,23 @@ export default function WorldChallengesScreen({
 
     const renderChallenge = useCallback(
         ({ item, index }: { item: WorldChallenge; index: number }) => (
-            <View style={styles.challengeCard}>
+            <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Open challenge: ${item.title}`}
+                onPress={() => {
+                    router.push({
+                        pathname: "/world/[slug]/challenge/[challengeSlug]",
+                        params: {
+                            slug,
+                            challengeSlug: item.slug,
+                        },
+                    });
+                }}
+                style={({ pressed }) => [
+                    styles.challengeCard,
+                    pressed && { opacity: 0.85 },
+                ]}
+            >
                 <View style={styles.challengeTopRow}>
                     <Text style={styles.challengeNumber}>
                         CHALLENGE {index + 1}
@@ -88,12 +104,12 @@ export default function WorldChallengesScreen({
                     </View>
 
                     <Text style={styles.startLabel}>
-                        Coming up →
+                        View Challenge →
                     </Text>
                 </View>
-            </View>
+            </Pressable>
         ),
-        [],
+        [router, slug],
     );
 
     return (
