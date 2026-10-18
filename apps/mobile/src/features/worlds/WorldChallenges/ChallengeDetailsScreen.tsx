@@ -194,8 +194,13 @@ export default function ChallengeDetailsScreen({
                         <Pressable
                             accessibilityRole="button"
                             onPress={() => {
-                                // The challenge execution flow will be
-                                // implemented as a separate feature.
+                                router.push({
+                                    pathname: "/world/[slug]/challenge/[challengeSlug]/play",
+                                    params: {
+                                        slug: worldSlug,
+                                        challengeSlug,
+                                    },
+                                });
                             }}
                             style={({ pressed }) => [
                                 styles.startButton,
