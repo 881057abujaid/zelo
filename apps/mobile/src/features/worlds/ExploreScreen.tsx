@@ -7,6 +7,7 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import { colors } from "@/constants/colors";
 import { getWorlds } from "@/features/worlds/worlds.service";
@@ -16,6 +17,8 @@ import { WorldCard } from "./components/WorldCard";
 import { styles } from "./ExploreScreen.styles";
 
 export default function ExploreScreen() {
+    const router = useRouter();
+
     const [worlds, setWorlds] = useState<World[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -43,9 +46,17 @@ export default function ExploreScreen() {
             <WorldCard
                 world={item}
                 index={index}
+                onPress={(world) => {
+                    router.push({
+                        pathname: "/world/[slug]",
+                        params: {
+                            slug: world.slug,
+                        },
+                    });
+                }}
             />
         ),
-        [],
+        [router],
     );
 
     return (

@@ -74,7 +74,13 @@ export default function RootLayout() {
       return;
     }
 
-    if (isOnboardingRoute || isAuthRoute || !isTabsRoute) {
+    const isWorldRoute = currentRoute === "world";
+
+    if (
+      isOnboardingRoute ||
+      isAuthRoute ||
+      (!isTabsRoute && !isWorldRoute)
+    ) {
       router.replace("/(tabs)/home");
     }
   }, [
