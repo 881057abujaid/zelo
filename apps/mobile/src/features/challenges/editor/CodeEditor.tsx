@@ -16,6 +16,81 @@ interface CodeEditorProps {
     editable?: boolean;
 }
 
+const INDENT = "    ";
+
+function getSmartIndentedCode(
+    previousCode: string,
+    newCode: string,
+    languageId: string,
+): string {
+    if (newCode.length <= previousCode.length) {
+        return newCode;
+    }
+
+    const addedText = newCode.length - previousCode.length;
+
+    if (!newCode.includes("\n")) {
+        return newCode;
+    }
+
+    const previousLines = previousCode.split("\n");
+    const newLines = newCode.split("\n");
+
+    if (newLines.length <= previousLines.length) {
+        return newCode;
+    }
+
+    const previousLine = previousLines[previousLines.length - 1] ?? "";
+    const currentLine = newLines[newLines.length - 1] ?? "";
+
+    const indentation = previousLine.match(/^[ \t]*/)?.[0] ?? "";
+
+    const isHtml = languageId === "html";
+    const isCss = languageId === "css";
+
+    const opensBlock =
+        isHtml
+            ? /<([a-z][\w-]*)(?:\s[^<>]*?)?>\s*$/i.test(previousLine) &&
+            !/<(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b[^>]*\/?>\s*$/i.test(previousLine)
+            : isCss
+                ? /{\s*$/.test(previousLine)
+                : /[{[(]\s*$/.test(previousLine);
+
+    const closesBlock =
+        isHtml
+            ? /^\s*<\/[a-z]/i.test(currentLine)
+            : /^[ \t]*[}\])]/.test(currentLine);
+
+    if (!opensBlock && !closesBlock) {
+        return newCode;
+    }
+
+    // React Native TextInput doesn't expose a native Enter key event
+    // through onChangeText, so only transform a simple inserted newline.
+    if (addedText > 2) {
+        return newCode;
+    }
+
+    const expectedIndent = opensBlock
+        ? `${indentation}${INDENT}`
+        : indentation;
+
+    const lastNewlineIndex = newCode.lastIndexOf("\n");
+
+    if (lastNewlineIndex === -1) {
+        return newCode;
+    }
+
+    const beforeLastLine = newCode.slice(0, lastNewlineIndex + 1);
+    const lastLine = newCode.slice(lastNewlineIndex + 1);
+
+    if (lastLine.trim().length > 0) {
+        return newCode;
+    }
+
+    return `${beforeLastLine}${expectedIndent}`;
+}
+
 export default function CodeEditor({
     language,
     value,
@@ -29,6 +104,16 @@ export default function CodeEditor({
     useEffect(() => {
         setLineCount(Math.max(value.split("\n").length, 1));
     }, [value]);
+
+    const handleCodeChange = (newCode: string) => {
+        const formattedCode = getSmartIndentedCode(
+            value,
+            newCode,
+            language.id,
+        );
+
+        onChange(formattedCode);
+    };
 
     return (
         <View style={styles.container}>
@@ -72,7 +157,7 @@ export default function CodeEditor({
                 <TextInput
                     style={styles.codeInput}
                     value={value}
-                    onChangeText={onChange}
+                    onChangeText={handleCodeChange}
                     multiline
                     editable={editable}
                     autoCapitalize="none"
