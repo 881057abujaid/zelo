@@ -144,4 +144,135 @@ export const styles = StyleSheet.create({
         fontSize: 14,
         lineHeight: 22,
     },
+
+    section: {
+        marginTop: 24,
+    },
+
+    sectionHeading: {
+        color: colors.text,
+        fontSize: 12,
+        fontWeight: "800",
+        letterSpacing: 1.2,
+        marginBottom: 12,
+    },
+
+    sectionHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 12,
+    },
+
+    secondaryButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.surface,
+    },
+
+    secondaryButtonText: {
+        color: colors.primary,
+        fontSize: 12,
+        fontWeight: "700",
+    },
+
+    noticeCard: {
+        marginTop: 20,
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.surface,
+    },
+
+    noticeTitle: {
+        color: colors.text,
+        fontSize: 14,
+        fontWeight: "800",
+        marginBottom: 8,
+    },
+
+    noticeDescription: {
+        color: colors.textSecondary,
+        fontSize: 13,
+        lineHeight: 21,
+    },
+
+    submitButton: {
+        minHeight: 52,
+        paddingHorizontal: 18,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 12,
+        backgroundColor: colors.primary,
+    },
+
+    submitButtonDisabled: {
+        opacity: 0.5,
+    },
+
+    submitButtonText: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontWeight: "800",
+    },
+
+    errorCard: {
+        marginTop: 12,
+        padding: 14,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#DC2626",
+        backgroundColor: "#450A0A",
+    },
+
+    errorText: {
+        color: "#FCA5A5",
+        fontSize: 13,
+        lineHeight: 20,
+    },
+
+    infoMeta: {
+        color: colors.primary,
+        fontSize: 13,
+        fontWeight: "700",
+        marginTop: 8,
+        marginBottom: 4,
+    },
+
+    editorTabs: {
+        flexDirection: "row",
+        gap: 8,
+        marginBottom: 12,
+    },
+
+    editorTab: {
+        minWidth: 80,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.surface,
+    },
+
+    editorTabActive: {
+        backgroundColor: colors.primary + "18",
+        borderColor: colors.primary,
+    },
+
+    editorTabText: {
+        color: colors.textSecondary,
+        fontSize: 12,
+        fontWeight: "700",
+    },
+
+    editorTabTextActive: {
+        color: colors.primary,
+    },
 });

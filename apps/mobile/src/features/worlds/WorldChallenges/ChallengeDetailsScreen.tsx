@@ -199,6 +199,11 @@ export default function ChallengeDetailsScreen({
                                     params: {
                                         slug: worldSlug,
                                         challengeSlug,
+                                        title: challenge.title,
+                                        description: challenge.description ?? "",
+                                        instructions: challenge.instructions ?? "",
+                                        difficulty: challenge.difficulty,
+                                        xpReward: String(challenge.xpReward),
                                     },
                                 });
                             }}
