@@ -24,6 +24,7 @@ export interface WorldChallenge {
     difficulty: string;
     xpReward: number;
     orderIndex: number;
+    isCompleted?: boolean;
 }
 
 interface WorldChallengesResponse {
@@ -43,6 +44,16 @@ export async function getWorldChallenges(
 ): Promise<WorldChallenge[]> {
     const response = await api.get<WorldChallengesResponse>(
         `/worlds/${encodeURIComponent(slug)}/challenges`,
+    );
+
+    return response.data.data;
+}
+
+export async function getWorldChallengesWithProgress(
+    slug: string,
+): Promise<WorldChallenge[]> {
+    const response = await api.get<WorldChallengesResponse>(
+        `/worlds/${encodeURIComponent(slug)}/progress`,
     );
 
     return response.data.data;

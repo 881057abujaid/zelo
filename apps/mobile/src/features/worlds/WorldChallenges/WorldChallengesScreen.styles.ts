@@ -160,6 +160,21 @@ export const styles = StyleSheet.create({
         fontWeight: "800",
     },
 
+    completedBadge: {
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 9,
+        backgroundColor: "#16A34A18",
+        borderWidth: 1,
+        borderColor: "#16A34A",
+    },
+
+    completedBadgeText: {
+        color: "#16A34A",
+        fontSize: 11,
+        fontWeight: "800",
+    },
+
     stateContainer: {
         flex: 1,
         minHeight: 250,
@@ -203,5 +218,51 @@ export const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontSize: 14,
         fontWeight: "800",
+    },
+    progressCard: {
+        marginTop: 20,
+        padding: 16,
+        borderRadius: 16,
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+
+    progressHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 12,
+    },
+
+    progressTitle: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: colors.text,
+    },
+
+    progressPercentage: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: colors.primary,
+    },
+
+    progressTrack: {
+        height: 8,
+        borderRadius: 999,
+        overflow: "hidden",
+        backgroundColor: colors.border,
+    },
+
+    progressFill: {
+        height: "100%",
+        borderRadius: 999,
+        backgroundColor: colors.primary,
+    },
+
+    progressDescription: {
+        marginTop: 10,
+        fontSize: 13,
+        color: colors.textSecondary,
     },
 });

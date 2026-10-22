@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
     ActivityIndicator,
     FlatList,
@@ -7,11 +7,11 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 
 import { colors } from "@/constants/colors";
 import {
-    getWorldChallenges,
+    getWorldChallengesWithProgress,
     type WorldChallenge,
 } from "@/features/worlds/worlds.service";
 
@@ -38,7 +38,7 @@ export default function WorldChallengesScreen({
         try {
             setError(null);
 
-            const data = await getWorldChallenges(slug);
+            const data = await getWorldChallengesWithProgress(slug);
 
             setChallenges(data);
         } catch {
@@ -50,10 +50,23 @@ export default function WorldChallengesScreen({
         }
     }, [slug]);
 
-    useEffect(() => {
-        setLoading(true);
-        loadChallenges();
-    }, [loadChallenges]);
+    useFocusEffect(
+        useCallback(() => {
+            setLoading(true);
+            loadChallenges();
+        }, [loadChallenges]),
+    );
+
+    const completedChallenges = challenges.filter(
+        (challenge) => challenge.isCompleted,
+    ).length;
+
+    const totalChallenges = challenges.length;
+
+    const progressPercentage =
+        totalChallenges > 0
+            ? Math.round((completedChallenges / totalChallenges) * 100)
+            : 0;
 
     const renderChallenge = useCallback(
         ({ item, index }: { item: WorldChallenge; index: number }) => (
@@ -103,9 +116,17 @@ export default function WorldChallengesScreen({
                         </Text>
                     </View>
 
-                    <Text style={styles.startLabel}>
-                        View Challenge →
-                    </Text>
+                    {item.isCompleted ? (
+                        <View style={styles.completedBadge}>
+                            <Text style={styles.completedBadgeText}>
+                                ✓ COMPLETED
+                            </Text>
+                        </View>
+                    ) : (
+                        <Text style={styles.startLabel}>
+                            Start Challenge →
+                        </Text>
+                    )}
                 </View>
             </Pressable>
         ),
@@ -181,6 +202,41 @@ export default function WorldChallengesScreen({
                                     </Text>
                                 </View>
                             )}
+
+                        {!loading && !error && challenges.length > 0 && (
+                            <View style={styles.progressCard}>
+                                <View style={styles.progressHeader}>
+                                    <Text style={styles.progressTitle}>
+                                        Your Progress
+                                    </Text>
+
+                                    <Text style={styles.progressPercentage}>
+                                        {progressPercentage}%
+                                    </Text>
+                                </View>
+
+                                <View
+                                    style={styles.progressTrack}
+                                    accessibilityRole="progressbar"
+                                    accessibilityValue={{
+                                        min: 0,
+                                        max: 100,
+                                        now: progressPercentage,
+                                    }}
+                                >
+                                    <View
+                                        style={[
+                                            styles.progressFill,
+                                            { width: `${progressPercentage}%` },
+                                        ]}
+                                    />
+                                </View>
+
+                                <Text style={styles.progressDescription}>
+                                    {completedChallenges} of {totalChallenges} challenges completed
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 }
                 ListEmptyComponent={
