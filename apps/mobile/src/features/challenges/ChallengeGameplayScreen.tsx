@@ -15,7 +15,7 @@ import type {
     LanguageId,
 } from "./config/languages";
 
-import CodeEditor from "./editor/CodeEditor";
+import CodeMirrorEditor from "./editor/CodeMirrorEditor";
 import LanguageSelector from "./editor/LanguageSelector";
 import HtmlPreview from "./preview/HtmlPreview";
 import TestResults from "./results/TestResults";
@@ -305,8 +305,9 @@ export default function ChallengeGameplayScreen({
                         </View>
                     )}
 
-                    <CodeEditor
-                        language={editorLanguage}
+                    <CodeMirrorEditor
+                        key={editorLanguage.id}
+                        language={editorLanguage.id}
                         value={editorCode}
                         onChange={handleEditorCodeChange}
                         editable={!isSubmitting}
