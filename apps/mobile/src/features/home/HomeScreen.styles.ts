@@ -309,19 +309,26 @@ export const styles = StyleSheet.create({
         borderColor: colors.border,
         borderRadius: 20,
     },
+    worldImage: {
+        width: 64,
+        height: 64,
+        borderRadius: 14,
+        backgroundColor: colors.primaryLight,
+    },
 
-    worldIcon: {
-        width: 52,
-        height: 52,
-        borderRadius: 16,
+    worldImageFallback: {
+        width: 64,
+        height: 64,
+        borderRadius: 14,
         backgroundColor: colors.primaryLight,
         alignItems: "center",
         justifyContent: "center",
     },
 
-    worldEmoji: {
-        fontSize: 26,
+    worldImageFallbackText: {
+        fontSize: 28,
     },
+
 
     worldContent: {
         flex: 1,

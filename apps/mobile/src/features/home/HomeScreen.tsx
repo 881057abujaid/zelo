@@ -1,31 +1,96 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, Text, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
-import { colors } from "@/constants/colors";
 import { styles } from "./HomeScreen.styles";
 import { useProgressStore } from "../progress/progressStore";
 import { challengeData } from "../onboarding/Challenge/challengeData";
 
+import {
+    getServerProgress,
+    type ServerProgress,
+} from "../progress/serverProgress.service";
+
 export default function HomeScreen() {
     const progress = useProgressStore();
 
-    const totalChallenges = challengeData.length;
-    const completedChallenges = progress.completedChallenges.length;
+    const [serverProgress, setServerProgress] =
+        useState<ServerProgress | null>(null);
+
+    const [isLoadingServerProgress, setIsLoadingServerProgress] =
+        useState(true);
+
+    const [serverProgressError, setServerProgressError] =
+        useState<string | null>(null);
+
+    useEffect(() => {
+        let isActive = true;
+
+        async function fetchProgress() {
+            try {
+                setIsLoadingServerProgress(true);
+                setServerProgressError(null);
+
+                const data = await getServerProgress();
+
+                if (isActive) {
+                    setServerProgress(data);
+                }
+            } catch (error) {
+                console.error(
+                    "Failed to fetch server progress:",
+                    error,
+                );
+
+                if (isActive) {
+                    setServerProgressError(
+                        "Unable to load your latest progress.",
+                    );
+                }
+            } finally {
+                if (isActive) {
+                    setIsLoadingServerProgress(false);
+                }
+            }
+        }
+
+        void fetchProgress();
+
+        return () => {
+            isActive = false;
+        };
+    }, []);
+
+    const totalChallenges =
+        serverProgress?.totalChallenges ?? challengeData.length;
+
+    const completedChallenges =
+        serverProgress?.completedChallenges ??
+        progress.completedChallenges.length;
+
+    const displayedXp = serverProgress?.totalXp ?? progress.xp;
+
+    const completionPercentage =
+        serverProgress?.overallProgress ??
+        (totalChallenges > 0
+            ? Math.round(
+                (completedChallenges / totalChallenges) * 100,
+            )
+            : 0);
+
+    const playerLevel = Math.floor(displayedXp / 500) + 1;
 
     const nextChallenge =
         challengeData.find(
             (challenge) =>
                 challenge.id === progress.currentChallengeId &&
-                !progress.completedChallenges.includes(challenge.id)
+                !progress.completedChallenges.includes(challenge.id),
         ) ??
         challengeData.find(
             (challenge) =>
-                !progress.completedChallenges.includes(challenge.id)
+                !progress.completedChallenges.includes(challenge.id),
         );
-
-    const completionPercentage = totalChallenges > 0 ? Math.round((completedChallenges / totalChallenges) * 100) : 0;
-    const playerLevel = Math.floor(progress.xp / 500) + 1;
 
     return (
         <SafeAreaView
@@ -67,7 +132,7 @@ export default function HomeScreen() {
                             ⚡
                         </Text>
                         <Text style={styles.statValue}>
-                            {progress.xp}
+                            {displayedXp}
                         </Text>
                         <Text style={styles.statLabel}>
                             Total XP
@@ -218,34 +283,87 @@ export default function HomeScreen() {
                             Your Learning Journey
                         </Text>
                         <Text style={styles.sectionEmoji}>
-                            🌍
+                            🌌
                         </Text>
                     </View>
 
-                    <View style={styles.worldCard}>
-                        <View style={styles.worldIcon}>
-                            <Text style={styles.worldEmoji}>
-                                🟨
-                            </Text>
-                        </View>
-
-                        <View style={styles.worldContent}>
-                            <Text style={styles.worldTitle}>
-                                JavaScript Foundations
-                            </Text>
-                            <Text style={styles.worldDescription}>
-                                Variables, data types and more.
-                            </Text>
-                            <Text style={styles.worldProgress}>
-                                {completionPercentage}/{totalChallenges} challenges completed
-                            </Text>
-                        </View>
-
-                        <Text style={styles.worldArrow}>
-                            →
+                    {isLoadingServerProgress ? (
+                        <Text style={styles.worldDescription}>
+                            Loading your learning worlds...
                         </Text>
-                    </View>
+                    ) : serverProgressError && !serverProgress ? (
+                        <Text style={styles.worldDescription}>
+                            Unable to load your learning worlds. Please try again later.
+                        </Text>
+                    ) : serverProgress?.worldProgress?.length ? (
+                        serverProgress.worldProgress.map((world) => (
+                            <View
+                                key={world.slug}
+                                style={[styles.worldCard, { marginBottom: 12 }]}
+                            >
+                                {world.imageUrl ? (
+                                    <Image
+                                        source={{ uri: world.imageUrl }}
+                                        style={styles.worldImage}
+                                        resizeMode="cover"
+                                        accessibilityLabel={`${world.title} world`}
+                                    />
+                                ) : (
+                                    <View style={styles.worldImageFallback}>
+                                        <Text style={styles.worldImageFallbackText}>
+                                            🌍
+                                        </Text>
+                                    </View>
+                                )}
+                                <View style={styles.worldContent}>
+                                    <Text style={styles.worldTitle}>
+                                        {world.title}
+                                    </Text>
+
+                                    <Text style={styles.worldDescription}>
+                                        {world.progressPercentage}% completed
+                                    </Text>
+
+                                    <Text style={styles.worldProgress}>
+                                        {world.completedChallenges}/
+                                        {world.totalChallenges} challenges completed
+                                    </Text>
+
+                                    <View
+                                        style={[
+                                            styles.progressTrack,
+                                            {
+                                                marginTop: 10,
+                                                marginBottom: 0,
+                                            },
+                                        ]}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.progressFill,
+                                                {
+                                                    width: `${Math.max(
+                                                        0,
+                                                        Math.min(
+                                                            100,
+                                                            world.progressPercentage,
+                                                        ),
+                                                    )}%`,
+                                                },
+                                            ]}
+                                        />
+                                    </View>
+                                </View>
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={styles.worldDescription}>
+                            No learning worlds are available yet. Start your adventure soon!
+                        </Text>
+                    )}
+
                 </View>
+
 
                 {/* Bottom Spacing */}
                 <View style={styles.bottomSpacing} />

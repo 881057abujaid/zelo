@@ -121,7 +121,7 @@ export async function getUserProgress(userId: string) {
                     id: true,
                     slug: true,
                     title: true,
-                    icon: true,
+                    imageUrl: true,
                     challenges: {
                         where: {
                             isPublished: true,
@@ -160,7 +160,7 @@ export async function getUserProgress(userId: string) {
         return {
             slug: world.slug,
             title: world.title,
-            icon: world.icon,
+            imageUrl: world.imageUrl,
             totalChallenges: total,
             completedChallenges: completed,
             progressPercentage:
