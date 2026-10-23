@@ -251,11 +251,15 @@ export default function HomeScreen() {
 
                         <View style={styles.missionContent}>
                             <Text style={styles.missionTitle}>
-                                Complete 3 challenges
+                                {completedChallenges >= 3
+                                    ? "Mission Completed! 🎉"
+                                    : "Complete 3 challenges"}
                             </Text>
 
                             <Text style={styles.missionDescription}>
-                                Keep learning and earn more XP.
+                                {completedChallenges >= 3
+                                    ? "Great work! Keep learning and leveling up."
+                                    : "Complete challenges to reach your mission goal."}
                             </Text>
 
                             <Text style={styles.missionProgress}>
