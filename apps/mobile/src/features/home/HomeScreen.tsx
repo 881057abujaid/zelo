@@ -5,7 +5,6 @@ import { router } from "expo-router";
 
 import { styles } from "./HomeScreen.styles";
 import { useProgressStore } from "../progress/progressStore";
-import { challengeData } from "../onboarding/Challenge/challengeData";
 
 import {
     getServerProgress,
@@ -62,8 +61,7 @@ export default function HomeScreen() {
         };
     }, []);
 
-    const totalChallenges =
-        serverProgress?.totalChallenges ?? challengeData.length;
+    const totalChallenges = serverProgress?.totalChallenges ?? 0;
 
     const completedChallenges =
         serverProgress?.completedChallenges ??
@@ -80,17 +78,6 @@ export default function HomeScreen() {
             : 0);
 
     const playerLevel = Math.floor(displayedXp / 500) + 1;
-
-    const nextChallenge =
-        challengeData.find(
-            (challenge) =>
-                challenge.id === progress.currentChallengeId &&
-                !progress.completedChallenges.includes(challenge.id),
-        ) ??
-        challengeData.find(
-            (challenge) =>
-                !progress.completedChallenges.includes(challenge.id),
-        );
 
     return (
         <SafeAreaView
@@ -161,78 +148,6 @@ export default function HomeScreen() {
                         <Text style={styles.statLabel}>
                             Lives
                         </Text>
-                    </View>
-                </View>
-
-                {/* Continue Learning */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>
-                            Continue Learning
-                        </Text>
-                        <Text style={styles.sectionEmoji}>
-                            🎯
-                        </Text>
-                    </View>
-
-                    <View style={styles.learningCard}>
-                        <View style={styles.learningTopRow}>
-                            <View style={styles.worldBadge}>
-                                <Text style={styles.worldBadgeText}>
-                                    JAVASCRIPT
-                                </Text>
-                            </View>
-                            <Text style={styles.difficulty}>
-                                BEGINNER
-                            </Text>
-                        </View>
-
-                        <Text style={styles.learningTitle}>
-                            {nextChallenge?.title ?? "All challenges completed!"}
-                        </Text>
-                        <Text style={styles.learningDescription}>
-                            {nextChallenge ? nextChallenge.description : "Amazing work! You've completed this challenge set."}
-                        </Text>
-
-                        <View style={styles.challengeMeta}>
-                            <Text style={styles.metaText}>
-                                📚 {completedChallenges}/{totalChallenges} completed
-                            </Text>
-                            <Text style={styles.metaText}>
-                                ⚡ {nextChallenge?.xp ?? 0} XP
-                            </Text>
-                        </View>
-
-                        <View style={styles.progressTrack}>
-                            <View
-                                style={[
-                                    styles.progressFill,
-                                    {
-                                        width: `${completionPercentage}%`
-                                    }
-                                ]}
-                            />
-                        </View>
-
-                        <Pressable
-                            accessibilityRole="button"
-                            style={({ pressed }) => [
-                                styles.continueButton,
-                                pressed && styles.buttonPressed,
-                                !nextChallenge && styles.disabledButton,
-                            ]}
-                            disabled={!nextChallenge}
-                            onPress={() => router.push("/onboarding/challenge")}
-                        >
-                            <Text style={styles.continueButtonText}>
-                                {nextChallenge ? "Continue Learning" : "Completed ✓"}
-                            </Text>
-                            {nextChallenge && (
-                                <Text style={styles.buttonArrow}>
-                                    →
-                                </Text>
-                            )}
-                        </Pressable>
                     </View>
                 </View>
 

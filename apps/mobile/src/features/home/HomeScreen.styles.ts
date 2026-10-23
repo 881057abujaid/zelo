@@ -123,118 +123,6 @@ export const styles = StyleSheet.create({
         marginBottom: 14,
     },
 
-    // Continue Learning
-    learningCard: {
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 24,
-        padding: 20,
-    },
-
-    learningTopRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 18,
-    },
-
-    worldBadge: {
-        backgroundColor: colors.primaryLight,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-    },
-
-    worldBadgeText: {
-        color: colors.primaryDark,
-        fontSize: 10,
-        fontWeight: "800",
-        letterSpacing: 0.7,
-    },
-
-    difficulty: {
-        fontSize: 10,
-        fontWeight: "700",
-        color: colors.textSecondary,
-        letterSpacing: 0.5,
-    },
-
-    learningTitle: {
-        fontSize: 22,
-        fontWeight: "800",
-        color: colors.text,
-        marginBottom: 8,
-    },
-
-    learningDescription: {
-        fontSize: 13,
-        lineHeight: 20,
-        color: colors.textSecondary,
-        marginBottom: 18,
-    },
-
-    challengeMeta: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 10,
-        gap: 8,
-    },
-
-    metaText: {
-        fontSize: 11,
-        fontWeight: "600",
-        color: colors.textSecondary,
-    },
-
-    progressTrack: {
-        width: "100%",
-        height: 7,
-        backgroundColor: colors.border,
-        borderRadius: 10,
-        overflow: "hidden",
-        marginBottom: 20,
-    },
-
-    progressFill: {
-        height: "100%",
-        backgroundColor: colors.primary,
-        borderRadius: 10,
-    },
-
-    continueButton: {
-        minHeight: 52,
-        paddingHorizontal: 18,
-        borderRadius: 15,
-        backgroundColor: colors.primary,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 10,
-    },
-
-    continueButtonText: {
-        color: "#FFFFFF",
-        fontSize: 14,
-        fontWeight: "800",
-    },
-
-    buttonArrow: {
-        color: "#FFFFFF",
-        fontSize: 20,
-        fontWeight: "600",
-    },
-
-    buttonPressed: {
-        opacity: 0.8,
-        transform: [{ scale: 0.99 }],
-    },
-
-    disabledButton: {
-        opacity: 0.55,
-    },
-
     // Daily Mission
     missionCard: {
         flexDirection: "row",
@@ -361,5 +249,18 @@ export const styles = StyleSheet.create({
 
     bottomSpacing: {
         height: 12,
+    },
+
+    progressTrack: {
+        height: 6,
+        backgroundColor: "#E2E8F0",
+        borderRadius: 999,
+        overflow: "hidden",
+    },
+
+    progressFill: {
+        height: "100%",
+        backgroundColor: colors.primary,
+        borderRadius: 999,
     },
 });
