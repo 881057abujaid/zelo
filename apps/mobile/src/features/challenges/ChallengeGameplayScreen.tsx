@@ -20,14 +20,10 @@ import LanguageSelector from "./editor/LanguageSelector";
 import HtmlPreview from "./preview/HtmlPreview";
 import TestResults from "./results/TestResults";
 
-import {
-    submitChallenge,
-} from "./challenges.service";
+import { submitChallenge } from "./challenges.service";
 
-import type {
-    ChallengeSubmissionResult,
-} from "./challenges.service";
-
+import type { ChallengeSubmissionResult } from "./challenges.service";
+import { useProgressStore } from "@/features/progress/progressStore";
 import { styles } from "./ChallengeGameplayScreen.styles";
 
 interface ChallengeGameplayScreenProps {
@@ -50,6 +46,10 @@ export default function ChallengeGameplayScreen({
     xpReward,
 }: ChallengeGameplayScreenProps) {
     const router = useRouter();
+
+    const recordDailyChallenge = useProgressStore(
+        (state) => state.recordDailyChallenge,
+    );
 
     const [selectedLanguage, setSelectedLanguage] =
         useState<LanguageId>("html");
@@ -162,6 +162,13 @@ export default function ChallengeGameplayScreen({
             );
 
             setResult(response.data);
+
+            if (
+                response.data.progress.isCompleted &&
+                response.data.attempt.status === "PASSED"
+            ) {
+                recordDailyChallenge(`${worldSlug}/${challengeSlug}`);
+            }
         } catch (error: unknown) {
             const message =
                 error instanceof Error

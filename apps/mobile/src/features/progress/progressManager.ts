@@ -1,36 +1,51 @@
 import type { PlayerProgress } from "./types";
 import type { ChallengeResult } from "../onboarding/Challenge/engine/types";
+import { getLocalDateKey } from "./progressState";
 
 export function applyChallengeResult(
     progress: PlayerProgress,
     result: ChallengeResult,
 ): PlayerProgress {
+    // Ignore results that have not been executed.
     if (!result.executed) {
         return progress;
     }
 
+    // Reset daily progress if the local date has changed.
+    const currentProgress = resetDailyProgressIfNeeded(progress);
+
     if (result.isCorrect) {
-        const alreadyCompleted = progress.completedChallenges.includes(result.challengeId);
+        const alreadyCompleted =
+            currentProgress.completedChallenges.includes(
+                result.challengeId,
+            );
+
+        // Record daily completion even if the challenge
+        // was completed previously, but award XP only once.
+        const updatedDailyProgress = recordDailyChallengeCompletion(
+            currentProgress,
+            result.challengeId,
+        );
+
         if (alreadyCompleted) {
-            return progress;
+            return updatedDailyProgress;
         }
 
         return {
-            ...progress,
-
-            xp: progress.xp + result.xpEarned,
-
+            ...updatedDailyProgress,
+            xp: updatedDailyProgress.xp + result.xpEarned,
             completedChallenges: [
-                ...progress.completedChallenges,
-                result.challengeId
+                ...updatedDailyProgress.completedChallenges,
+                result.challengeId,
             ],
         };
     }
 
+    // Incorrect answers reduce lives but do not count
+    // toward daily challenge completion.
     return {
-        ...progress,
-
-        lives: Math.max(progress.lives - 1, 0),
+        ...currentProgress,
+        lives: Math.max(currentProgress.lives - 1, 0),
     };
 }
 
@@ -87,6 +102,48 @@ export function updateMissionCompletion(
         completedMissionIds: [
             ...progress.completedMissionIds,
             missionId,
+        ],
+    };
+}
+
+export function resetDailyProgressIfNeeded(
+    progress: PlayerProgress,
+    dateKey = getLocalDateKey(),
+): PlayerProgress {
+    if (progress.dailyProgressDate === dateKey) {
+        return progress;
+    }
+
+    return {
+        ...progress,
+        dailyCompletedChallengeIds: [],
+        dailyProgressDate: dateKey,
+    };
+}
+
+export function recordDailyChallengeCompletion(
+    progress: PlayerProgress,
+    challengeId: string,
+    dateKey = getLocalDateKey(),
+): PlayerProgress {
+    const currentProgress = resetDailyProgressIfNeeded(
+        progress,
+        dateKey,
+    );
+
+    if (
+        currentProgress.dailyCompletedChallengeIds.includes(
+            challengeId,
+        )
+    ) {
+        return currentProgress;
+    }
+
+    return {
+        ...currentProgress,
+        dailyCompletedChallengeIds: [
+            ...currentProgress.dailyCompletedChallengeIds,
+            challengeId,
         ],
     };
 }

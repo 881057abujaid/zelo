@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import { Pressable, ScrollView, Text, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -14,6 +15,10 @@ import {
 export default function HomeScreen() {
     const progress = useProgressStore();
 
+    const resetDailyProgressIfNeeded = useProgressStore(
+        (state) => state.resetDailyProgressIfNeeded,
+    );
+
     const [serverProgress, setServerProgress] =
         useState<ServerProgress | null>(null);
 
@@ -22,6 +27,12 @@ export default function HomeScreen() {
 
     const [serverProgressError, setServerProgressError] =
         useState<string | null>(null);
+
+    useFocusEffect(
+        useCallback(() => {
+            resetDailyProgressIfNeeded();
+        }, [resetDailyProgressIfNeeded]),
+    );
 
     useEffect(() => {
         let isActive = true;
@@ -68,6 +79,16 @@ export default function HomeScreen() {
         progress.completedChallenges.length;
 
     const displayedXp = serverProgress?.totalXp ?? progress.xp;
+
+    const dailyCompletedCount = progress.dailyCompletedChallengeIds.length;
+    const dailyMissionTarget = 3;
+    const dailyMissionProgress = Math.min(
+        dailyCompletedCount,
+        dailyMissionTarget,
+    );
+
+    const isDailyMissionCompleted =
+        dailyCompletedCount >= dailyMissionTarget;
 
     const completionPercentage =
         serverProgress?.overallProgress ??
@@ -166,19 +187,19 @@ export default function HomeScreen() {
 
                         <View style={styles.missionContent}>
                             <Text style={styles.missionTitle}>
-                                {completedChallenges >= 3
+                                {isDailyMissionCompleted
                                     ? "Mission Completed! 🎉"
                                     : "Complete 3 challenges"}
                             </Text>
 
                             <Text style={styles.missionDescription}>
-                                {completedChallenges >= 3
+                                {isDailyMissionCompleted
                                     ? "Great work! Keep learning and leveling up."
                                     : "Complete challenges to reach your mission goal."}
                             </Text>
 
                             <Text style={styles.missionProgress}>
-                                {Math.min(completedChallenges, 3)}/3 completed
+                                {dailyMissionProgress}/{dailyMissionTarget} completed
                             </Text>
 
                             <View style={styles.missionProgressTrack}>
@@ -186,8 +207,9 @@ export default function HomeScreen() {
                                     style={[
                                         styles.missionProgressFill,
                                         {
-                                            width: `${(Math.min(completedChallenges, 3) / 3) * 100}%`,
-                                        }
+                                            width: `${(dailyMissionProgress / dailyMissionTarget) * 100
+                                                }%`,
+                                        },
                                     ]}
                                 />
                             </View>
